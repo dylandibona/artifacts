@@ -8,6 +8,7 @@ export default function Home() {
   const [submitter, setSubmitter] = useState("");
   const [mediaType, setMediaType] = useState("");
   const [vibe, setVibe] = useState("");
+  const [decade, setDecade] = useState("1980s");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,6 +45,7 @@ export default function Home() {
           submitter,
           mediaType,
           vibe,
+          decade,
         }),
       });
 
@@ -135,6 +137,29 @@ export default function Home() {
                 />
               </div>
             )}
+
+            {/* The Era */}
+            <div>
+              <label className="block font-semibold uppercase mb-2 text-sm tracking-wide" style={{ fontFamily: "var(--font-body)" }}>The Era</label>
+              <div className="relative">
+                <select
+                  value={decade}
+                  onChange={(e) => setDecade(e.target.value)}
+                  className="w-full bg-[#f4f1de] border-2 border-[#3d405b] p-3 pr-10 rounded appearance-none focus:outline-none focus:border-[#cc5500]"
+                  style={{ fontFamily: "var(--font-mono)", fontWeight: 400 }}
+                >
+                  <option value="1970s">1970s</option>
+                  <option value="1980s">1980s</option>
+                  <option value="1990s">1990s</option>
+                  <option value="Early 2000s">Early 2000s</option>
+                </select>
+                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#3d405b]">
+                  <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                  </svg>
+                </div>
+              </div>
+            </div>
 
             {/* Vibe */}
             <div>
