@@ -141,22 +141,31 @@ export default function Home() {
             {/* The Era */}
             <div>
               <label className="block font-semibold uppercase mb-2 text-sm tracking-wide" style={{ fontFamily: "var(--font-body)" }}>The Era</label>
-              <div className="flex border-2 border-[#3d405b] rounded overflow-hidden bg-[#f4f1de]">
-                {["1970s", "1980s", "1990s", "2000s"].map((era, index) => (
-                  <button
-                    key={era}
-                    type="button"
-                    onClick={() => setDecade(era === "2000s" ? "Early 2000s" : era)}
-                    className={`flex-1 py-3 px-2 text-sm md:text-base transition-all relative ${
-                      (decade === era || (era === "2000s" && decade === "Early 2000s"))
-                        ? "bg-[#3d405b] text-[#f4f1de] font-semibold shadow-inner"
-                        : "bg-[#f4f1de] text-[#3d405b] hover:bg-[#e07a5f]/20"
-                    } ${index !== 0 ? "border-l-2 border-[#3d405b]" : ""}`}
-                    style={{ fontFamily: "var(--font-mono)", fontWeight: (decade === era || (era === "2000s" && decade === "Early 2000s")) ? 600 : 400 }}
-                  >
-                    {era}
-                  </button>
-                ))}
+              <div className="flex gap-2 md:gap-3">
+                {["1970s", "1980s", "1990s", "2000s"].map((era) => {
+                  const isSelected = decade === era || (era === "2000s" && decade === "Early 2000s");
+                  return (
+                    <button
+                      key={era}
+                      type="button"
+                      onClick={() => setDecade(era === "2000s" ? "Early 2000s" : era)}
+                      className={`flex-1 py-3 px-2 text-sm md:text-base rounded border-2 border-[#3d405b] transition-all ${
+                        isSelected
+                          ? "bg-[#3d405b] text-[#f4f1de] translate-y-[2px]"
+                          : "bg-[#f4f1de] text-[#3d405b] hover:bg-[#e07a5f]/10"
+                      }`}
+                      style={{
+                        fontFamily: "var(--font-mono)",
+                        fontWeight: isSelected ? 600 : 400,
+                        boxShadow: isSelected
+                          ? "inset 2px 2px 4px rgba(0,0,0,0.3)"
+                          : "3px 3px 0px 0px rgba(61,64,91,1)",
+                      }}
+                    >
+                      {era}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
