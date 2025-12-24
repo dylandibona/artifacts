@@ -1,20 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
 import Replicate from "replicate";
-import OpenAI from "openai";
 
 export async function POST(request: NextRequest) {
   try {
-    const { phrase, subtitle, mediaType, vibe, artistModel } = await request.json();
+    const { phrase, subtitle, mediaType, vibe } = await request.json();
 
     if (!phrase) {
       return NextResponse.json({ error: "Phrase is required" }, { status: 400 });
     }
 
-    // ==========================================
-    // 📸 ENGINE 1: "THE PHOTOGRAPHER" (Ideogram v3)
-    // ==========================================
-    if (artistModel === "flux" || !artistModel) {
-      const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
+    const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
       
       const realism = "Style: Raw amateur photography, realistic texture, film grain, unedited. NOT a render.";
       
@@ -81,44 +76,8 @@ export async function POST(request: NextRequest) {
         }
       });
 
-      const imageUrl = Array.isArray(output) ? output[0] : String(output);
-      return NextResponse.json({ url: imageUrl });
-    }
-
-    // ==========================================
-    // 🎨 ENGINE 2: "THE ILLUSTRATOR" (DALL-E 3)
-    // ==========================================
-    else {
-      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-      const natural = "Photorealistic, 35mm film, cinematic lighting. Highly detailed texture.";
-      let prompt = "";
-      
-      switch (mediaType) {
-        case "Autobiography":
-            const sub = subtitle ? `Subtitle "${subtitle}" is printed below.` : "";
-            prompt = `A photorealistic studio shot of a vintage hardcover autobiography. Title "${phrase}". ${sub} Style: ${vibe}. Background: academic study. ${natural}`;
-            break;
-        case "Vinyl Record":
-            prompt = `A photorealistic shot of a vinyl album on a retro carpet. Band name "${phrase}". Cover art style: ${vibe}. Ring wear on sleeve. Neon price tag. ${natural}`;
-            break;
-        case "Gig Poster":
-            prompt = `A realistic photo of a gig poster stapled to a wooden pole. Band "${phrase}". Style: ${vibe}. Wrinkled paper. Nighttime lighting. ${natural}`;
-            break;
-        case "VHS Tape":
-            prompt = `A close-up photo of a VHS tape stack. Label reads "${phrase}". Style: ${vibe}. Scratched plastic. ${natural}`;
-            break;
-        case "Cassette Tape":
-            prompt = `A close-up photo of a cassette tape in a car. Title "${phrase}". Style: ${vibe}. Reflections on plastic. ${natural}`;
-            break;
-        default:
-             prompt = `A photorealistic image of "${phrase}" as a 1980s object. Style: ${vibe}. ${natural}`;
-      }
-
-      const response = await openai.images.generate({
-        model: "dall-e-3", prompt, size: "1024x1024", quality: "hd", style: "natural", n: 1,
-      });
-      return NextResponse.json({ url: response.data?.[0]?.url });
-    }
+    const imageUrl = Array.isArray(output) ? output[0] : String(output);
+    return NextResponse.json({ url: imageUrl });
 
   } catch (error) {
     console.error("Error generating image:", error);
