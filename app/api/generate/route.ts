@@ -20,24 +20,25 @@ export async function POST(request: NextRequest) {
             const sub = subtitle ? `The subtitle "${subtitle}" appears below the title.` : "";
             prompt = `A photograph of a hardcover autobiography lying on a cluttered desk in a ${decade} academic study.
                 Dust jacket with worn edges, coffee ring stain nearby.
-                The title "${phrase}" is printed on the cover in period-appropriate typography.
-                ${sub}
-                The cover design aesthetic is ${vibe}.
+                TEXT ON COVER: The title "${phrase}" is printed on the cover. ${sub}
+                DESIGN STYLE: The cover aesthetic is ${vibe}.
                 Stacks of papers, reading glasses, and a desk lamp visible in the background.
                 ${realism}`;
             break;
 
         case "Vinyl Record":
             prompt = `An overhead photograph of a vinyl record sleeve lying on shag carpet in a ${decade} living room.
-                The album "${phrase}" with cover art in the style of ${vibe}.
-                The sleeve has ring wear, soft corners, and a used record store price sticker.
-                A turntable and scattered records visible at the edge of frame.
+                TEXT ON COVER: The album title "${phrase}" appears on the sleeve.
+                DESIGN STYLE: The cover art aesthetic is ${vibe}.
+                The sleeve has ring wear, soft corners, and a price sticker.
+                A turntable visible at the edge of frame.
                 ${realism}`;
             break;
 
         case "Gig Poster":
             prompt = `A nighttime flash photograph of a wheat-pasted concert poster on a weathered telephone pole.
-                The poster announces "${phrase}" in bold lettering, designed in ${vibe} style typical of ${decade} punk and rock flyers.
+                TEXT ON POSTER: The poster announces "${phrase}" in bold lettering.
+                DESIGN STYLE: The poster aesthetic is ${vibe}, typical of ${decade} punk and rock flyers.
                 The paper is torn, layered over older posters, held by rusty staples.
                 A dark street scene behind, shot like amateur street photography.
                 ${realism}`;
@@ -45,26 +46,30 @@ export async function POST(request: NextRequest) {
 
         case "VHS Tape":
             prompt = `A photograph of a black VHS tape sitting on a cluttered coffee table in a messy ${decade} living room.
-                A handwritten label on the spine reads "${phrase}" in sharpie.
+                TEXT ON LABEL: A handwritten label on the spine reads "${phrase}" in sharpie.
+                DESIGN STYLE: The overall aesthetic is ${vibe}.
                 The tape is dusty, the plastic scratched from years of use.
-                The aesthetic is ${vibe}.
                 Other tapes, a remote control, and an ashtray visible nearby. Harsh overhead lighting.
                 ${realism}`;
             break;
 
         case "Cassette Tape":
             prompt = `A flash photograph of a cassette tape case on the dashboard of a beat-up ${decade} car.
-                The J-card insert shows "${phrase}" as the album title, designed in ${vibe} style.
+                TEXT ON J-CARD: The album title "${phrase}" appears on the insert.
+                DESIGN STYLE: The J-card aesthetic is ${vibe}.
                 The plastic case is cracked and sun-faded.
                 Fuzzy dice or air freshener hanging from the rearview mirror, cracked vinyl seats visible.
                 ${realism}`;
             break;
 
         default:
-            prompt = `A raw photograph of a worn ${decade} artifact labeled "${phrase}" in a lived-in setting. Style: ${vibe}. ${realism}`;
+            prompt = `A raw photograph of a worn ${decade} artifact in a lived-in setting.
+                TEXT: Labeled "${phrase}".
+                DESIGN STYLE: ${vibe}.
+                ${realism}`;
       }
 
-      const output = await replicate.run("google/imagen-4", {
+      const output = await replicate.run("google/imagen-3", {
         input: {
             prompt: prompt,
             aspect_ratio: "1:1"
