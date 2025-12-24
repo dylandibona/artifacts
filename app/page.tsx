@@ -177,10 +177,10 @@ export default function Home() {
               <div className="relative aspect-square w-full overflow-hidden bg-gray-100 border border-gray-200">
                 <img src={generatedImage} alt="Generated Artifact" className="w-full h-full object-cover" />
               </div>
-              <div className="mt-4 flex gap-4 justify-center">
-                 <button onClick={() => handleSubmit()} className="flex items-center gap-2 px-4 py-2 bg-[#f4f1de] border-2 border-[#3d405b] text-[#3d405b] hover:bg-[#e07a5f]/20 rounded transition-colors" style={{ fontFamily: "var(--font-body)", fontWeight: 600 }}><span>🔄</span> Remix</button>
-                <button onClick={() => copyToClipboard(generatedImage)} className="flex items-center gap-2 px-4 py-2 bg-[#f4f1de] border-2 border-[#3d405b] text-[#3d405b] hover:bg-[#e07a5f]/20 rounded transition-colors" style={{ fontFamily: "var(--font-body)", fontWeight: 600 }}><span>📋</span> Copy</button>
-                <a href={generatedImage} download="artifact.jpg" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 px-4 py-2 bg-[#3d405b] text-white hover:bg-opacity-90 rounded transition-colors" style={{ fontFamily: "var(--font-body)", fontWeight: 600 }}><span>⬇️</span> Download</a>
+              <div className="mt-4 flex flex-wrap gap-2 md:gap-4 justify-center">
+                 <button onClick={() => handleSubmit()} className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 text-sm md:text-base bg-[#f4f1de] border-2 border-[#3d405b] text-[#3d405b] hover:bg-[#e07a5f]/20 rounded transition-colors" style={{ fontFamily: "var(--font-body)", fontWeight: 600 }}><span>🔄</span> Remix</button>
+                <button onClick={() => copyToClipboard(generatedImage)} className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 text-sm md:text-base bg-[#f4f1de] border-2 border-[#3d405b] text-[#3d405b] hover:bg-[#e07a5f]/20 rounded transition-colors" style={{ fontFamily: "var(--font-body)", fontWeight: 600 }}><span>📋</span> Copy</button>
+                <a href={generatedImage} download="artifact.jpg" target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 md:gap-2 px-3 md:px-4 py-2 text-sm md:text-base bg-[#3d405b] text-white hover:bg-opacity-90 rounded transition-colors" style={{ fontFamily: "var(--font-body)", fontWeight: 600 }}><span>⬇️</span> Download</a>
               </div>
             </div>
           </div>
