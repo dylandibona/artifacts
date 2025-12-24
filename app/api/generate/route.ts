@@ -17,49 +17,51 @@ export async function POST(request: NextRequest) {
       
       switch (mediaType) {
         case "Autobiography":
-            const sub = subtitle ? `Subtitle "${subtitle}" is printed below the title.` : "";
-            prompt = `A photograph of a hardcover autobiography from the ${decade} on a wooden desk.
-                The book has a dust jacket with worn edges.
-                The title "${phrase}" is printed prominently on the cover.
+            const sub = subtitle ? `The subtitle "${subtitle}" appears below the title.` : "";
+            prompt = `A photograph of a hardcover autobiography lying on a cluttered desk in a ${decade} academic study.
+                Dust jacket with worn edges, coffee ring stain nearby.
+                The title "${phrase}" is printed on the cover in period-appropriate typography.
                 ${sub}
-                The aesthetic is ${vibe}.
+                The cover design aesthetic is ${vibe}.
+                Stacks of papers, reading glasses, and a desk lamp visible in the background.
                 ${realism}`;
             break;
 
         case "Vinyl Record":
-            prompt = `A photograph taken from above of a vinyl record sleeve on a carpeted floor.
-                The album title "${phrase}" is displayed on the cover art.
-                The cover art style is ${vibe}, reflecting ${decade} graphic design.
-                The sleeve shows ring wear and scuffed corners. A price sticker is visible.
+            prompt = `An overhead photograph of a vinyl record sleeve lying on shag carpet in a ${decade} living room.
+                The album "${phrase}" with cover art in the style of ${vibe}.
+                The sleeve has ring wear, soft corners, and a used record store price sticker.
+                A turntable and scattered records visible at the edge of frame.
                 ${realism}`;
             break;
 
         case "Gig Poster":
-            prompt = `A nighttime flash photograph of a concert poster stapled to a telephone pole.
-                The poster advertises "${phrase}" in bold lettering.
-                The design style is ${vibe}, typical of ${decade} concert flyers.
-                The paper is weathered with tears and rusty staples.
+            prompt = `A nighttime flash photograph of a wheat-pasted concert poster on a weathered telephone pole.
+                The poster announces "${phrase}" in bold lettering, designed in ${vibe} style typical of ${decade} punk and rock flyers.
+                The paper is torn, layered over older posters, held by rusty staples.
+                A dark street scene behind, shot like amateur street photography.
                 ${realism}`;
             break;
 
         case "VHS Tape":
-            prompt = `A photograph of a VHS tape among a stack of tapes on a coffee table.
-                A handwritten label reads "${phrase}" in marker.
+            prompt = `A photograph of a black VHS tape sitting on a cluttered coffee table in a messy ${decade} living room.
+                A handwritten label on the spine reads "${phrase}" in sharpie.
+                The tape is dusty, the plastic scratched from years of use.
                 The aesthetic is ${vibe}.
-                The plastic is scratched and dusty. Shot in ${decade}.
+                Other tapes, a remote control, and an ashtray visible nearby. Harsh overhead lighting.
                 ${realism}`;
             break;
 
         case "Cassette Tape":
-            prompt = `A flash photograph of a cassette tape case on a car dashboard.
-                The J-card insert displays "${phrase}" as the album title.
-                The design style is ${vibe}, reflecting ${decade} aesthetics.
-                The plastic case is scuffed with a cracked corner.
+            prompt = `A flash photograph of a cassette tape case on the dashboard of a beat-up ${decade} car.
+                The J-card insert shows "${phrase}" as the album title, designed in ${vibe} style.
+                The plastic case is cracked and sun-faded.
+                Fuzzy dice or air freshener hanging from the rearview mirror, cracked vinyl seats visible.
                 ${realism}`;
             break;
 
         default:
-            prompt = `A photograph of a ${decade} artifact labeled "${phrase}". Style: ${vibe}. ${realism}`;
+            prompt = `A raw photograph of a worn ${decade} artifact labeled "${phrase}" in a lived-in setting. Style: ${vibe}. ${realism}`;
       }
 
       const output = await replicate.run("google/imagen-4", {
