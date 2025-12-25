@@ -19,9 +19,26 @@ export default function Home() {
 
   const randomizeVibe = () => {
     const vibes = [
-      "Cyberpunk 2077", "1980s Darkwave", "Cottagecore", "Industrial Grunge",
-      "Wes Anderson Pastel", "Neon Noir", "Victorian Gothic", "Early 2000s Internet",
-      "Psychedelic Rock", "Minimalist Swiss Design", "Mallsoft", "70s Punk",
+      "1970s wood-paneled basement",
+      "1983 aerobics VHS",
+      "Soviet propaganda poster",
+      "Memphis Design fever dream",
+      "Faded beach town motel",
+      "1990s mall food court",
+      "70s sci-fi paperback",
+      "Yacht rock smooth",
+      "Public access TV",
+      "Trapper Keeper fantasy art",
+      "Corporate synergy handbook",
+      "Faded national park brochure",
+      "Eastern Bloc cartoon",
+      "Late night infomercial",
+      "1995 CD-ROM game",
+      "Brutalist architecture catalog",
+      "70s occult bookstore",
+      "Y2K chrome and plastic",
+      "Diner placemat illustration",
+      "VHS horror rental",
     ];
     setVibe(vibes[Math.floor(Math.random() * vibes.length)]);
   };
@@ -124,6 +141,21 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Subtitle - Only shows for Autobiography and Business Book */}
+            {(mediaType === "Autobiography" || mediaType === "Business Book") && (
+              <div className="animate-in fade-in slide-in-from-top-2">
+                <label className="block text-sm font-semibold uppercase mb-2 tracking-wide" style={{ fontFamily: "var(--font-body)" }}>Subtitle (Optional)</label>
+                <input
+                  type="text"
+                  value={subtitle}
+                  onChange={(e) => setSubtitle(e.target.value)}
+                  placeholder="A memoir of triumph, scandal, or snacks"
+                  className="w-full bg-[#f4f1de] border-2 border-[#3d405b] p-3 text-lg rounded focus:outline-none focus:border-[#cc5500]"
+                  style={{ fontFamily: "var(--font-mono)", fontWeight: 400 }}
+                />
+              </div>
+            )}
+
             {/* Found At */}
             <div>
               <label className="block font-semibold uppercase mb-2 text-sm tracking-wide" style={{ fontFamily: "var(--font-body)" }}>Found At</label>
@@ -147,21 +179,6 @@ export default function Home() {
                 </div>
               </div>
             </div>
-
-            {/* ✅ CONDITIONAL SUBTITLE INPUT - Only shows after Media Type when Autobiography is selected */}
-            {(mediaType === "Autobiography" || mediaType === "Business Book") && (
-              <div className="animate-in fade-in slide-in-from-top-2">
-                <label className="block text-sm font-semibold uppercase mb-2 tracking-wide" style={{ fontFamily: "var(--font-body)" }}>Subtitle (Optional)</label>
-                <input
-                  type="text"
-                  value={subtitle}
-                  onChange={(e) => setSubtitle(e.target.value)}
-                  placeholder="A memoir of triumph, scandal, or snacks"
-                  className="w-full bg-[#f4f1de] border-2 border-[#3d405b] p-3 text-lg rounded focus:outline-none focus:border-[#cc5500]"
-                  style={{ fontFamily: "var(--font-mono)", fontWeight: 400 }}
-                />
-              </div>
-            )}
 
             {/* Vibe */}
             <div>
