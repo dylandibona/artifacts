@@ -3,7 +3,8 @@ import Replicate from "replicate";
 
 export async function POST(request: NextRequest) {
   try {
-    const { phrase, subtitle, mediaType, vibe } = await request.json();
+    const { phrase, subtitle, mediaType, vibe: rawVibe } = await request.json();
+    const vibe = rawVibe ? rawVibe.replace(/,\s*/g, " and ") : "";
 
     if (!phrase) {
       return NextResponse.json({ error: "Phrase is required" }, { status: 400 });
