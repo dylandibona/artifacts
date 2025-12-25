@@ -8,7 +8,6 @@ export default function Home() {
   const [submitter, setSubmitter] = useState("");
   const [mediaType, setMediaType] = useState("");
   const [vibe, setVibe] = useState("");
-  const [decade, setDecade] = useState("1980s");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -45,7 +44,6 @@ export default function Home() {
           submitter,
           mediaType,
           vibe,
-          decade,
         }),
       });
 
@@ -137,37 +135,6 @@ export default function Home() {
                 />
               </div>
             )}
-
-            {/* The Era */}
-            <div>
-              <label className="block font-semibold uppercase mb-2 text-sm tracking-wide" style={{ fontFamily: "var(--font-body)" }}>The Era</label>
-              <div className="flex gap-2 md:gap-3">
-                {["1970s", "1980s", "1990s", "2000s"].map((era) => {
-                  const isSelected = decade === era || (era === "2000s" && decade === "Early 2000s");
-                  return (
-                    <button
-                      key={era}
-                      type="button"
-                      onClick={() => setDecade(era === "2000s" ? "Early 2000s" : era)}
-                      className={`flex-1 py-3 px-2 text-sm md:text-base rounded border-2 border-[#3d405b] transition-all ${
-                        isSelected
-                          ? "bg-[#3d405b] text-[#f4f1de] translate-y-[2px]"
-                          : "bg-[#f4f1de] text-[#3d405b] hover:bg-[#e07a5f]/10"
-                      }`}
-                      style={{
-                        fontFamily: "var(--font-mono)",
-                        fontWeight: isSelected ? 600 : 400,
-                        boxShadow: isSelected
-                          ? "inset 2px 2px 4px rgba(0,0,0,0.3)"
-                          : "3px 3px 0px 0px rgba(61,64,91,1)",
-                      }}
-                    >
-                      {era}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
 
             {/* Vibe */}
             <div>
