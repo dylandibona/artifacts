@@ -8,7 +8,6 @@ export default function Home() {
   const [submitter, setSubmitter] = useState("");
   const [mediaType, setMediaType] = useState("");
   const [vibe, setVibe] = useState("");
-  const [foundAt, setFoundAt] = useState("Thrift Store");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -62,7 +61,6 @@ export default function Home() {
           submitter,
           mediaType,
           vibe,
-          foundAt,
         }),
       });
 
@@ -155,30 +153,6 @@ export default function Home() {
                 />
               </div>
             )}
-
-            {/* Found At */}
-            <div>
-              <label className="block font-semibold uppercase mb-2 text-sm tracking-wide" style={{ fontFamily: "var(--font-body)" }}>Found At</label>
-              <div className="relative">
-                <select
-                  value={foundAt}
-                  onChange={(e) => setFoundAt(e.target.value)}
-                  className="w-full bg-[#f4f1de] border-2 border-[#3d405b] p-3 pr-10 rounded appearance-none focus:outline-none focus:border-[#cc5500]"
-                  style={{ fontFamily: "var(--font-mono)", fontWeight: 400 }}
-                >
-                  <option value="Estate Sale">Estate Sale</option>
-                  <option value="Thrift Store">Thrift Store</option>
-                  <option value="Garage Floor">Garage Floor</option>
-                  <option value="Attic Box">Attic Box</option>
-                  <option value="Someone's Car">Someone&apos;s Car</option>
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#3d405b]">
-                  <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
-                  </svg>
-                </div>
-              </div>
-            </div>
 
             {/* Vibe */}
             <div>

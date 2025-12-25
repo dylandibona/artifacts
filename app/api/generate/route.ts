@@ -3,7 +3,7 @@ import Replicate from "replicate";
 
 export async function POST(request: NextRequest) {
   try {
-    const { phrase, subtitle, mediaType, vibe, foundAt } = await request.json();
+    const { phrase, subtitle, mediaType, vibe } = await request.json();
 
     if (!phrase) {
       return NextResponse.json({ error: "Phrase is required" }, { status: 400 });
@@ -11,73 +11,90 @@ export async function POST(request: NextRequest) {
 
     const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
-    const conditionMap: Record<string, string> = {
-      "Estate Sale": "dusty, sun-faded, slightly yellowed, musty estate sale find, soft natural window light",
-      "Thrift Store": "price sticker residue, shelf wear, under harsh fluorescent lighting, thrift store bin",
-      "Garage Floor": "on concrete garage floor, oil stains nearby, dusty, harsh overhead shadow",
-      "Attic Box": "pulled from a cardboard box, cobwebs, water stains, yellowed and forgotten",
-      "Someone's Car": "on a car seat, sun-damaged, crumbs and receipts nearby, dashboard reflection"
-    };
-    const condition = conditionMap[foundAt] || conditionMap["Thrift Store"];
+    const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
-    const realism = "Shot on film, natural lighting, realistic textures. NOT a digital render.";
+    const realism = "Photograph shot on 35mm film. Realistic.";
 
-      let prompt = "";
+    let prompt = "";
 
-      switch (mediaType) {
-        case "Autobiography":
-            const sub = subtitle ? `The subtitle "${subtitle}" appears below the title.` : "";
-            prompt = `A photograph of a hardcover book, ${condition}.
-TEXT ON COVER: The title "${phrase}" is printed prominently on the dust jacket. ${sub}
-The book has worn edges, creased spine from being read.
-DESIGN STYLE: The cover design aesthetic is ${vibe}.
+    switch (mediaType) {
+      case "Autobiography":
+        const autobioSub = subtitle ? ` Subtitle: "${subtitle}"` : "";
+        const autobioLocation = pickRandom([
+          "on a table at an estate sale",
+          "in a thrift store bin",
+          "displayed in a dusty bookstore window"
+        ]);
+        prompt = `A photograph of a hardcover autobiography ${autobioLocation}.
+TEXT: Title "${phrase}" on the cover.${autobioSub}
+DESIGN STYLE: ${vibe}.
 ${realism}`;
-            break;
+        break;
 
-        case "Business Book":
-            const bookSub = subtitle ? `The subtitle "${subtitle}" appears below the title.` : "";
-            prompt = `A photograph of a mass-market business paperback book, ${condition}.
-TEXT ON COVER: The title "${phrase}" in bold sans-serif font. ${bookSub} A "BESTSELLER" badge in the corner. Author photo on back cover visible.
-The cover is glossy but worn, creased spine from being read, dog-eared pages visible.
-DESIGN STYLE: The cover design aesthetic is ${vibe} — like a typical airport bookstore business bestseller.
+      case "Business Book":
+        const bizSub = subtitle ? ` Subtitle: "${subtitle}"` : "";
+        const bizLocation = pickRandom([
+          "on a table at an estate sale",
+          "in a thrift store bin",
+          "displayed in a bookstore window"
+        ]);
+        prompt = `A photograph of a mass-market business paperback ${bizLocation}.
+TEXT: Title "${phrase}" in bold font.${bizSub}
+DESIGN STYLE: ${vibe}. Looks like an airport bestseller.
 ${realism}`;
-            break;
+        break;
 
-        case "Vinyl Record":
-            prompt = `An overhead photograph of a vinyl record sleeve, ${condition}.
-TEXT ON COVER: The album title "${phrase}" appears on the sleeve.
-The sleeve has ring wear, soft corners, and a price sticker.
-DESIGN STYLE: The cover art aesthetic is ${vibe}.
+      case "Vinyl Record":
+        const vinylLocation = pickRandom([
+          "in a thrift store record bin",
+          "in a crate at a record store",
+          "on the floor of a stoner's living room near a turntable"
+        ]);
+        prompt = `A photograph of a vinyl record sleeve ${vinylLocation}.
+TEXT: Album title "${phrase}" on the cover.
+DESIGN STYLE: ${vibe}.
 ${realism}`;
-            break;
+        break;
 
-        case "Gig Poster":
-            prompt = `A photograph of a concert poster, ${condition}.
-TEXT ON POSTER: "${phrase}" appears in bold lettering as the headline.
-The paper is torn at edges, creased and weathered.
-DESIGN STYLE: The poster design aesthetic is ${vibe}.
+      case "Gig Poster":
+        const gigLocation = pickRandom([
+          "stapled to a telephone pole at night, flash photography",
+          "on a crowded bulletin board with other flyers",
+          "wheat-pasted on a brick wall in an alley"
+        ]);
+        prompt = `A photograph of a concert poster ${gigLocation}.
+TEXT: "${phrase}" as the headline.
+DESIGN STYLE: ${vibe}.
 ${realism}`;
-            break;
+        break;
 
-        case "VHS Tape":
-            prompt = `A photograph of a VHS tape, ${condition}.
-TEXT ON LABEL: A handwritten label reads "${phrase}" in black marker on the spine.
-The plastic is scratched and dusty.
-DESIGN STYLE: The overall aesthetic is ${vibe}.
+      case "VHS Tape":
+        const vhsLocation = pickRandom([
+          "on a TV stand in a cramped, messy living room",
+          "in a thrift store bin with other tapes",
+          "in a cardboard box in an attic"
+        ]);
+        prompt = `A photograph of a VHS tape ${vhsLocation}.
+TEXT: Handwritten label reads "${phrase}" in marker.
+DESIGN STYLE: ${vibe}.
 ${realism}`;
-            break;
+        break;
 
-        case "Cassette Tape":
-            prompt = `A photograph of a cassette tape case, ${condition}.
-TEXT ON J-CARD: The album title "${phrase}" is printed on the J-card insert.
-The plastic case is cracked and worn.
-DESIGN STYLE: The J-card design aesthetic is ${vibe}.
+      case "Cassette Tape":
+        const cassetteLocation = pickRandom([
+          "on the dashboard of a beat-up old car",
+          "in a thrift store bin",
+          "in a shoebox full of tapes"
+        ]);
+        prompt = `A photograph of a cassette tape in its case ${cassetteLocation}.
+TEXT: "${phrase}" printed on the J-card insert.
+DESIGN STYLE: ${vibe}.
 ${realism}`;
-            break;
+        break;
 
-        default:
-            prompt = `A photograph of a vintage object, ${condition}. TEXT: "${phrase}" visible. Style: ${vibe}. ${realism}`;
-      }
+      default:
+        prompt = `A photograph of a vintage object. TEXT: "${phrase}". STYLE: ${vibe}. ${realism}`;
+    }
 
       const output = await replicate.run("ideogram-ai/ideogram-v3-quality", {
         input: {
