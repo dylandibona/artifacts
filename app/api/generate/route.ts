@@ -35,36 +35,36 @@ ${realism}`;
       case "Business Book":
         const bizSub = subtitle ? ` Subtitle: "${subtitle}"` : "";
         const bizLocation = pickRandom([
-          "on a table at an estate sale",
-          "in a thrift store bin",
-          "displayed in a bookstore window"
+          "on a table at an estate sale, other books stacked nearby",
+          "in a thrift store bin, spine cracked",
+          "in a bookstore window display, slightly sun-faded"
         ]);
-        prompt = `A photograph of a mass-market business paperback ${bizLocation}.
-TEXT: Title "${phrase}" in bold font.${bizSub}
-DESIGN STYLE: ${vibe}. Looks like an airport bestseller.
+        prompt = `A photograph of a paperback business book ${bizLocation}.
+TEXT: Title "${phrase}" in bold, confident lettering.${bizSub}
+DESIGN STYLE: ${vibe}. Typical airport bookstore bestseller with endorsement quotes on cover.
 ${realism}`;
         break;
 
       case "Vinyl Record":
         const vinylLocation = pickRandom([
-          "in a thrift store record bin",
-          "in a crate at a record store",
-          "on the floor of a stoner's living room near a turntable"
+          "in a thrift store record bin, other records visible",
+          "in a dusty crate at a record store",
+          "on the floor near a turntable, rolling papers nearby"
         ]);
         prompt = `A photograph of a vinyl record sleeve ${vinylLocation}.
-TEXT: Album title "${phrase}" on the cover.
+TEXT: Album title "${phrase}" in typography that fits a ${vibe} aesthetic.
 DESIGN STYLE: ${vibe}.
 ${realism}`;
         break;
 
       case "Gig Poster":
         const gigLocation = pickRandom([
-          "stapled to a telephone pole at night, flash photography",
-          "on a crowded bulletin board with other flyers",
-          "wheat-pasted on a brick wall in an alley"
+          "stapled to a telephone pole at night, shot with flash, tape peeling",
+          "pinned to a chaotic bulletin board in a grimy coffee shop, overlapping other flyers, torn corners, coffee stains",
+          "wheat-pasted on a crumbling brick wall, partially covered by newer posters"
         ]);
         prompt = `A photograph of a concert poster ${gigLocation}.
-TEXT: "${phrase}" as the headline.
+TEXT: "${phrase}" as the headline in typography that matches a ${vibe} aesthetic.
 DESIGN STYLE: ${vibe}.
 ${realism}`;
         break;
