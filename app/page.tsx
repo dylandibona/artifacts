@@ -91,7 +91,7 @@ export default function Home() {
               <textarea
                 value={phrase}
                 onChange={(e) => setPhrase(e.target.value)}
-                placeholder="e.g. Panic at the Disco Brunch"
+                placeholder="The name of your fake band, book, or movie..."
                 rows={2}
                 className="w-full bg-[#f4f1de] border-2 border-[#3d405b] p-4 text-2xl focus:outline-none focus:ring-4 ring-[#cc5500] rounded-lg resize-none"
                 style={{ fontFamily: "var(--font-body)", fontWeight: 600, letterSpacing: "0.01em" }}
@@ -156,7 +156,7 @@ export default function Home() {
                   type="text"
                   value={subtitle}
                   onChange={(e) => setSubtitle(e.target.value)}
-                  placeholder="e.g. The Dylan DiBona Story"
+                  placeholder="A memoir of triumph, scandal, or snacks"
                   className="w-full bg-[#f4f1de] border-2 border-[#3d405b] p-3 text-lg rounded focus:outline-none focus:border-[#cc5500]"
                   style={{ fontFamily: "var(--font-mono)", fontWeight: 400 }}
                 />
@@ -171,7 +171,7 @@ export default function Home() {
                   type="text"
                   value={vibe}
                   onChange={(e) => setVibe(e.target.value)}
-                  placeholder="e.g. 1980s Neon Horror"
+                  placeholder="Describe the design style: 1970s punk, 90s corporate, Y2K chrome..."
                   className="flex-1 bg-[#f4f1de] border-2 border-[#3d405b] p-3 rounded focus:outline-none focus:border-[#cc5500]"
                   style={{ fontFamily: "var(--font-mono)", fontWeight: 400 }}
                 />
