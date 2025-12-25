@@ -3,62 +3,80 @@ import Replicate from "replicate";
 
 export async function POST(request: NextRequest) {
   try {
-    const { phrase, subtitle, mediaType, vibe } = await request.json();
+    const { phrase, subtitle, mediaType, vibe, foundAt } = await request.json();
 
     if (!phrase) {
       return NextResponse.json({ error: "Phrase is required" }, { status: 400 });
     }
 
     const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
-      
-      const realism = "Shot on film, natural lighting, realistic textures. NOT a digital render.";
+
+    const conditionMap: Record<string, string> = {
+      "Estate Sale": "dusty, sun-faded, slightly yellowed, musty estate sale find, soft natural window light",
+      "Thrift Store": "price sticker residue, shelf wear, under harsh fluorescent lighting, thrift store bin",
+      "Garage Floor": "on concrete garage floor, oil stains nearby, dusty, harsh overhead shadow",
+      "Attic Box": "pulled from a cardboard box, cobwebs, water stains, yellowed and forgotten",
+      "Someone's Car": "on a car seat, sun-damaged, crumbs and receipts nearby, dashboard reflection"
+    };
+    const condition = conditionMap[foundAt] || conditionMap["Thrift Store"];
+
+    const realism = "Shot on film, natural lighting, realistic textures. NOT a digital render.";
 
       let prompt = "";
 
       switch (mediaType) {
         case "Autobiography":
             const sub = subtitle ? `The subtitle "${subtitle}" appears below the title.` : "";
-            prompt = `A photograph of a hardcover book lying on a cluttered wooden desk in an academic study.
+            prompt = `A photograph of a hardcover book, ${condition}.
 TEXT ON COVER: The title "${phrase}" is printed prominently on the dust jacket. ${sub}
-The book has worn edges, a coffee ring stain nearby, reading glasses and papers visible.
+The book has worn edges, creased spine from being read.
 DESIGN STYLE: The cover design aesthetic is ${vibe}.
 ${realism}`;
             break;
 
+        case "Business Book":
+            const bookSub = subtitle ? `The subtitle "${subtitle}" appears below the title.` : "";
+            prompt = `A photograph of a mass-market business paperback book, ${condition}.
+TEXT ON COVER: The title "${phrase}" in bold sans-serif font. ${bookSub} A "BESTSELLER" badge in the corner. Author photo on back cover visible.
+The cover is glossy but worn, creased spine from being read, dog-eared pages visible.
+DESIGN STYLE: The cover design aesthetic is ${vibe} — like a typical airport bookstore business bestseller.
+${realism}`;
+            break;
+
         case "Vinyl Record":
-            prompt = `An overhead photograph of a vinyl record sleeve lying on carpet in a living room.
+            prompt = `An overhead photograph of a vinyl record sleeve, ${condition}.
 TEXT ON COVER: The album title "${phrase}" appears on the sleeve.
-The sleeve has ring wear, soft corners, and a price sticker. A turntable is visible at the edge of frame.
+The sleeve has ring wear, soft corners, and a price sticker.
 DESIGN STYLE: The cover art aesthetic is ${vibe}.
 ${realism}`;
             break;
 
         case "Gig Poster":
-            prompt = `A nighttime flash photograph of a concert poster stapled to a weathered telephone pole.
+            prompt = `A photograph of a concert poster, ${condition}.
 TEXT ON POSTER: "${phrase}" appears in bold lettering as the headline.
-The paper is torn at edges, layered over older posters, held by rusty staples. Dark street behind.
+The paper is torn at edges, creased and weathered.
 DESIGN STYLE: The poster design aesthetic is ${vibe}.
 ${realism}`;
             break;
 
         case "VHS Tape":
-            prompt = `A photograph of a VHS tape sitting among other tapes on a messy coffee table.
+            prompt = `A photograph of a VHS tape, ${condition}.
 TEXT ON LABEL: A handwritten label reads "${phrase}" in black marker on the spine.
-The plastic is scratched and dusty, harsh overhead lighting, a remote control visible nearby.
+The plastic is scratched and dusty.
 DESIGN STYLE: The overall aesthetic is ${vibe}.
 ${realism}`;
             break;
 
         case "Cassette Tape":
-            prompt = `A flash photograph of a cassette tape case on a car dashboard.
+            prompt = `A photograph of a cassette tape case, ${condition}.
 TEXT ON J-CARD: The album title "${phrase}" is printed on the J-card insert.
-The plastic case is cracked and sun-faded, car interior visible in background.
+The plastic case is cracked and worn.
 DESIGN STYLE: The J-card design aesthetic is ${vibe}.
 ${realism}`;
             break;
 
         default:
-            prompt = `A photograph of a vintage object with the text "${phrase}" visible. Style: ${vibe}. ${realism}`;
+            prompt = `A photograph of a vintage object, ${condition}. TEXT: "${phrase}" visible. Style: ${vibe}. ${realism}`;
       }
 
       const output = await replicate.run("ideogram-ai/ideogram-v3-quality", {
