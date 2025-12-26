@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
-    const realism = "Style: Raw amateur photography, realistic texture, film grain, unedited. NOT a render.";
+    const realism = "Style: Vintage photograph with film grain, light leaks, slightly faded colors. Shot on old 35mm camera. NOT a render.";
 
     let prompt = "";
 
