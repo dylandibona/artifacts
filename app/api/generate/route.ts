@@ -82,15 +82,16 @@ ${realism}`;
 
       case "Cassette Tape":
         const cassetteLocation = pickRandom([
-          "on the dashboard of an old car",
-          "on a shelf with other tapes",
-          "in a pile at a thrift store"
+          "sitting on the dusty dashboard of an old car",
+          "lying on a cluttered bedroom floor with other tapes",
+          "in a thrift store display case"
         ]);
-        prompt = `A close-up photo of a commercial audio cassette tape in its plastic case ${cassetteLocation}.
-The clear hinged case shows the printed J-card insert with album artwork.
-The album title "${phrase}" is printed on the J-card.
+        prompt = `A close-up photograph of a retail music cassette tape case ${cassetteLocation}.
+The hinged clear plastic case shows a colorful J-card insert with professional album cover artwork.
+The album title "${phrase}" is prominently displayed on the front cover art.
 The cover art style is ${vibe}.
-The plastic case is slightly scratched and worn.
+The plastic case has light scratches and wear from use.
+A small price sticker is visible on the case.
 ${realism}`;
         break;
 
