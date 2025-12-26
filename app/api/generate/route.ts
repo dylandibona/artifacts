@@ -79,14 +79,14 @@ Design style: ${vibe}.`;
       case "Cassette Tape":
         const cassetteLocation = pickRandom([
           "on the dashboard of an old car",
-          "in a pile of other albums",
+          "in a pile of other music",
           "at a thrift store",
           "on a bedroom floor"
         ]);
         prompt = `${photoStyle}
-Subject: A 1980s music album in cassette format ${cassetteLocation}. Focus on the album cover artwork and packaging, showing the colorful printed J-card with artist imagery, record label logo, and professional graphic design.
-TEXT: "${phrase}" as the album title.
-This is a real commercial music release with professional cover art — like something from Columbia Records or Warner Bros.
+Subject: A rectangular plastic music album case from the 1980s ${cassetteLocation}. The case has a printed cardboard insert with colorful album cover artwork visible through the clear plastic.
+TEXT: "${phrase}" as the album title on the cover art.
+Professional commercial release with artist photo or illustration, record label branding.
 Cover art style: ${vibe}.`;
         break;
 
