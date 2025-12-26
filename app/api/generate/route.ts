@@ -22,12 +22,14 @@ export async function POST(request: NextRequest) {
       case "Autobiography":
         const autobioSub = subtitle ? ` Subtitle: "${subtitle}"` : "";
         const autobioLocation = pickRandom([
-          "on a table at an estate sale, price sticker visible",
-          "in a thrift store bin, spine sun-faded",
-          "displayed in a dusty used bookstore window"
+          "on a table at an estate sale",
+          "in a thrift store bin",
+          "displayed in a dusty bookstore window"
         ]);
         prompt = `A photograph of a hardcover autobiography ${autobioLocation}.
-The book titled "${phrase}" has cover art reflecting a ${vibe} aesthetic.${autobioSub}
+TEXT: Title "${phrase}" on the cover.${autobioSub}
+The cover design features typography and graphic elements only — no portrait photo, no face, no person.
+DESIGN STYLE: ${vibe}.
 ${realism}`;
         break;
 
