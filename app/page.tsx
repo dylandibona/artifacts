@@ -65,14 +65,22 @@ export default function Home() {
       });
 
       const data = await res.json();
-      if (data.url) setGeneratedImage(data.url);
-      else alert("Failed to generate: " + (data.error || "Unknown error"));
+      if (data.url) {
+        setGeneratedImage(data.url);
+        playSound('/sounds/microwave-timer.mp3');
+      } else alert("Failed to generate: " + (data.error || "Unknown error"));
     } catch (error) {
       console.error(error);
       alert("Something went wrong. Check the console.");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const playSound = (soundFile: string) => {
+    const audio = new Audio(soundFile);
+    audio.volume = 0.5;
+    audio.play().catch(() => {});
   };
 
   const copyToClipboard = async (imageUrl: string) => {
