@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Tape body -->
+  <rect x="2" y="6" width="28" height="20" rx="2" fill="#3d405b"/>
+
+  <!-- Label area -->
+  <rect x="5" y="9" width="22" height="10" rx="1" fill="#f4f1de"/>
+
+  <!-- Tape reels -->
+  <circle cx="11" cy="21" r="3" fill="#1a1a2e"/>
+  <circle cx="21" cy="21" r="3" fill="#1a1a2e"/>
+  <circle cx="11" cy="21" r="1" fill="#f4f1de"/>
+  <circle cx="21" cy="21" r="1" fill="#f4f1de"/>
+
+  <!-- Orange accent stripe -->
+  <rect x="5" y="12" width="22" height="3" fill="#cc5500"/>
+</svg>
