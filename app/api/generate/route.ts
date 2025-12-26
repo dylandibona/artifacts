@@ -28,7 +28,7 @@ export async function POST(request: NextRequest) {
         ]);
         prompt = `A photograph of a hardcover autobiography ${autobioLocation}.
 TEXT: Title "${phrase}" on the cover.${autobioSub}
-The cover design features typography and graphic elements only — no portrait photo, no face, no person.
+The cover design is typography-focused with graphic elements, abstract shapes, or symbolic imagery.
 DESIGN STYLE: ${vibe}.
 ${realism}`;
         break;
