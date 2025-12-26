@@ -78,13 +78,15 @@ Design style: ${vibe}.`;
 
       case "Cassette Tape":
         const cassetteLocation = pickRandom([
-          "on the dashboard of a beat-up old car, sun-faded",
-          "in a thrift store bin, plastic case cracked",
-          "in a shoebox full of tapes"
+          "on the dashboard of an old car",
+          "in a shoebox full of tapes",
+          "on a shelf at a thrift store",
+          "in a worn carrying case with other tapes"
         ]);
         prompt = `${photoStyle}
-Subject: A cassette tape in its case ${cassetteLocation}.
-TEXT: "${phrase}" on the J-card insert.
+Subject: A commercial music cassette tape in its plastic case ${cassetteLocation}.
+TEXT: "${phrase}" as the album title on the J-card insert.
+The J-card has professional album artwork and design — a real music release, not a homemade mixtape.
 Design style: ${vibe}.`;
         break;
 
