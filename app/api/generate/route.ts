@@ -81,7 +81,8 @@ ${realism}`;
 TEXT: "${phrase}" as the movie title on the cover.
 The cover art depicts an over-the-top ${vhsGenre} with dramatic poses and taglines.
 Cover art style: ${vibe}.
-The photograph looks vintage — shot on old film with light leaks, color fade, and soft focus.`;
+The sleeve is worn with creased edges, faded colors, and rental sticker residue.
+${realism}`;
         break;
 
       case "Cassette Tape":
