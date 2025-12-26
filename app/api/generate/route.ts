@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
-    const realism = "Shot on 35mm film with visible grain, slightly out of focus, amateur photography aesthetic.";
+    const photoStyle = "Vintage photograph with light leaks, film grain, and slightly faded colors. Shot on old 35mm camera.";
 
     let prompt = "";
 
@@ -32,10 +32,10 @@ export async function POST(request: NextRequest) {
           "paperback book",
           "book with a dust jacket"
         ]);
-        prompt = `A photograph of a ${bookFormat} ${bookLocation}.
+        prompt = `${photoStyle}
+Subject: A ${bookFormat} ${bookLocation}.
 TEXT: Title "${phrase}" on the cover — use typography that matches ${vibe} style.${bookSub}
-Cover design aesthetic: ${vibe}.
-${realism}`;
+Design style: ${vibe}.`;
         break;
 
       case "Vinyl Record":
@@ -44,9 +44,10 @@ ${realism}`;
           "in a dusty crate at a record store, ring wear on sleeve",
           "on the floor near a turntable, rolling papers nearby"
         ]);
-        prompt = `A photograph of a vinyl record sleeve ${vinylLocation}.
-The album "${phrase}" has cover art and typography reflecting a ${vibe} aesthetic.
-${realism}`;
+        prompt = `${photoStyle}
+Subject: A vinyl record sleeve ${vinylLocation}.
+TEXT: "${phrase}" as the album title.
+Design style: ${vibe}.`;
         break;
 
       case "Gig Flyer":
@@ -55,9 +56,10 @@ ${realism}`;
           "pinned to a messy bulletin board in a grimy coffee shop, overlapping torn flyers and handbills",
           "wheat-pasted on a crumbling brick wall, edges torn, partially covered by newer posters"
         ]);
-        prompt = `A photograph of a concert flyer ${gigLocation}.
-The flyer promotes "${phrase}" — the entire poster design (colors, layout, illustration style, and typography) reflects a ${vibe} aesthetic.
-${realism}`;
+        prompt = `${photoStyle}
+Subject: A concert flyer ${gigLocation}.
+TEXT: "${phrase}" as the band or event name.
+Design style: ${vibe}.`;
         break;
 
       case "VHS Tape":
@@ -77,12 +79,11 @@ ${realism}`;
           "cop drama",
           "adventure film"
         ]);
-        prompt = `A photograph of a VHS tape in its cardboard sleeve ${vhsLocation}.
+        prompt = `${photoStyle}
+Subject: A VHS tape in its cardboard sleeve ${vhsLocation}.
 TEXT: "${phrase}" as the movie title on the cover.
-The cover art depicts an over-the-top ${vhsGenre} with dramatic poses and taglines.
-Cover art style: ${vibe}.
-The sleeve is worn with creased edges, faded colors, and rental sticker residue.
-${realism}`;
+The cover art depicts an over-the-top ${vhsGenre} with dramatic poses.
+Design style: ${vibe}.`;
         break;
 
       case "Cassette Tape":
@@ -91,20 +92,22 @@ ${realism}`;
           "in a thrift store bin, plastic case cracked",
           "in a shoebox full of tapes"
         ]);
-        prompt = `A photograph of a cassette tape in its case ${cassetteLocation}.
-The J-card insert shows "${phrase}" — the design reflects a ${vibe} aesthetic.
-${realism}`;
+        prompt = `${photoStyle}
+Subject: A cassette tape in its case ${cassetteLocation}.
+TEXT: "${phrase}" on the J-card insert.
+Design style: ${vibe}.`;
         break;
 
       default:
-        prompt = `A photograph of a vintage object labeled "${phrase}" with a ${vibe} aesthetic. ${realism}`;
+        prompt = `${photoStyle}
+Subject: A vintage object labeled "${phrase}".
+Design style: ${vibe}.`;
     }
 
       const output = await replicate.run("ideogram-ai/ideogram-v3-quality", {
         input: {
             prompt: prompt,
             aspect_ratio: "1:1",
-            style_type: "Realistic",
             magic_prompt_option: "Auto"
         }
       });

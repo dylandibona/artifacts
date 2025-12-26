@@ -189,11 +189,11 @@ export default function Home() {
             <button
               type="submit"
               disabled={isLoading || !phrase || !mediaType}
-              className={`w-full py-4 text-xl uppercase tracking-wider border-2 border-[#3d405b] rounded shadow-[4px_4px_0px_0px_rgba(61,64,91,1)] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(61,64,91,1)] transition-all ${isLoading ? "bg-[#3d405b] text-[#f4f1de] cursor-wait" : !phrase || !mediaType ? "bg-gray-400 cursor-not-allowed" : "bg-[#cc5500] text-white hover:bg-[#dd6611]"}`}
+              className={`w-full py-4 text-xl uppercase tracking-wider border-2 border-[#3d405b] rounded transition-all ${isLoading ? "bg-[#2d2f45] text-[#a0a0a0] cursor-wait shadow-inner transform scale-[0.98]" : !phrase || !mediaType ? "bg-gray-400 cursor-not-allowed shadow-[4px_4px_0px_0px_rgba(61,64,91,1)]" : "bg-[#cc5500] text-white hover:bg-[#dd6611] shadow-[4px_4px_0px_0px_rgba(61,64,91,1)] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(61,64,91,1)]"}`}
               style={{ fontFamily: "var(--font-body)", fontWeight: 700, letterSpacing: "0.05em" }}
             >
               <span className="flex items-center justify-center gap-2">
-                {isLoading ? "Generating" : "Generate Artifact"}
+                {isLoading ? "Generating Artifact" : "Generate Artifact"}
                 {isLoading && (
                   <svg
                     className="animate-spin h-5 w-5"
