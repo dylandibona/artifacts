@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
-    const photoStyle = "Vintage photograph with light leaks, film grain, and slightly faded colors. Shot on old 35mm camera.";
+    const realism = "Style: Raw amateur photography, realistic texture, film grain, unedited. NOT a render.";
 
     let prompt = "";
 
@@ -32,10 +32,11 @@ export async function POST(request: NextRequest) {
           "paperback book",
           "book with a dust jacket"
         ]);
-        prompt = `${photoStyle}
-Subject: A ${bookFormat} ${bookLocation}.
-TEXT: Title "${phrase}" on the cover — use typography that matches ${vibe} style.${bookSub}
-Design style: ${vibe}.`;
+        prompt = `A close-up photo of a ${bookFormat} ${bookLocation}.
+The book title "${phrase}" is on the cover.${bookSub}
+The cover design style is ${vibe}.
+The book is slightly worn and aged.
+${realism}`;
         break;
 
       case "Vinyl Record":
@@ -44,10 +45,11 @@ Design style: ${vibe}.`;
           "in a dusty crate at a record store, ring wear on sleeve",
           "on the floor near a turntable, rolling papers nearby"
         ]);
-        prompt = `${photoStyle}
-Subject: A vinyl record sleeve ${vinylLocation}.
-TEXT: "${phrase}" as the album title.
-Design style: ${vibe}.`;
+        prompt = `A close-up photo of a vinyl record sleeve ${vinylLocation}.
+The album title "${phrase}" is on the cover.
+The cover art style is ${vibe}.
+The sleeve has ring wear and slightly bent corners.
+${realism}`;
         break;
 
       case "Gig Flyer":
@@ -56,10 +58,11 @@ Design style: ${vibe}.`;
           "pinned to a messy bulletin board in a grimy coffee shop, overlapping torn flyers and handbills",
           "wheat-pasted on a crumbling brick wall, edges torn, partially covered by newer posters"
         ]);
-        prompt = `${photoStyle}
-Subject: A concert flyer ${gigLocation}.
-TEXT: "${phrase}" as the band or event name.
-Design style: ${vibe}.`;
+        prompt = `A close-up photo of a concert flyer ${gigLocation}.
+The flyer promotes "${phrase}" as the band or event name.
+The flyer design style is ${vibe}.
+The paper is weathered, torn at the edges, with tape residue.
+${realism}`;
         break;
 
       case "VHS Tape":
@@ -69,37 +72,39 @@ Design style: ${vibe}.`;
           "in a cardboard box at a garage sale",
           "on a cluttered coffee table"
         ]);
-        prompt = `${photoStyle}
-Subject: A VHS tape in its cardboard sleeve ${vhsLocation}.
-TEXT: "${phrase}" as the movie title on the cover.
+        prompt = `A close-up photo of a VHS tape in its cardboard sleeve ${vhsLocation}.
+The movie title "${phrase}" is on the cover.
 The cover art depicts an over-the-top ${movieGenre} with dramatic poses.
-Design style: ${vibe}.`;
+The cover art style is ${vibe}.
+The sleeve is worn with creased edges and faded colors.
+${realism}`;
         break;
 
       case "Cassette Tape":
         const cassetteLocation = pickRandom([
           "on the dashboard of an old car",
-          "in a pile of other music",
-          "at a thrift store",
-          "on a bedroom floor"
+          "on a shelf with other tapes",
+          "in a pile at a thrift store"
         ]);
-        prompt = `${photoStyle}
-Subject: A rectangular plastic music album case from the 1980s ${cassetteLocation}. The case has a printed cardboard insert with colorful album cover artwork visible through the clear plastic.
-TEXT: "${phrase}" as the album title on the cover art.
-Professional commercial release with artist photo or illustration, record label branding.
-Cover art style: ${vibe}.`;
+        prompt = `A close-up photo of a commercial audio cassette tape in its plastic case ${cassetteLocation}.
+The clear hinged case shows the printed J-card insert with album artwork.
+The album title "${phrase}" is printed on the J-card.
+The cover art style is ${vibe}.
+The plastic case is slightly scratched and worn.
+${realism}`;
         break;
 
       default:
-        prompt = `${photoStyle}
-Subject: A vintage object labeled "${phrase}".
-Design style: ${vibe}.`;
+        prompt = `A close-up photo of a vintage object labeled "${phrase}".
+The design style is ${vibe}.
+${realism}`;
     }
 
       const output = await replicate.run("ideogram-ai/ideogram-v3-quality", {
         input: {
             prompt: prompt,
             aspect_ratio: "1:1",
+            style_type: "Realistic",
             magic_prompt_option: "Auto"
         }
       });
