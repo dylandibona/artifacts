@@ -10,28 +10,12 @@ export default function Home() {
   const [vibe, setVibe] = useState("");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [loadingDots, setLoadingDots] = useState("");
 
   useEffect(() => {
     const savedSubmitter = localStorage.getItem("submitter");
     if (savedSubmitter) setSubmitter(savedSubmitter);
   }, []);
 
-  useEffect(() => {
-    if (!isLoading) {
-      setLoadingDots("");
-      return;
-    }
-
-    const interval = setInterval(() => {
-      setLoadingDots(prev => {
-        if (prev === "...") return "";
-        return prev + ".";
-      });
-    }, 400);
-
-    return () => clearInterval(interval);
-  }, [isLoading]);
 
   const randomizeVibe = () => {
     const vibes = [
@@ -205,10 +189,34 @@ export default function Home() {
             <button
               type="submit"
               disabled={isLoading || !phrase || !mediaType}
-              className={`w-full py-4 text-xl uppercase tracking-wider border-2 border-[#3d405b] rounded shadow-[4px_4px_0px_0px_rgba(61,64,91,1)] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(61,64,91,1)] transition-all ${isLoading || !phrase || !mediaType ? "bg-gray-400 cursor-not-allowed" : "bg-[#cc5500] text-white hover:bg-[#dd6611]"}`}
+              className={`w-full py-4 text-xl uppercase tracking-wider border-2 border-[#3d405b] rounded shadow-[4px_4px_0px_0px_rgba(61,64,91,1)] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(61,64,91,1)] transition-all ${isLoading ? "bg-[#3d405b] text-[#f4f1de] cursor-wait" : !phrase || !mediaType ? "bg-gray-400 cursor-not-allowed" : "bg-[#cc5500] text-white hover:bg-[#dd6611]"}`}
               style={{ fontFamily: "var(--font-body)", fontWeight: 700, letterSpacing: "0.05em" }}
             >
-              {isLoading ? `Developing Artifact${loadingDots}` : "Generate Artifact"}
+              <span className="flex items-center justify-center gap-2">
+                {isLoading ? "Generating" : "Generate Artifact"}
+                {isLoading && (
+                  <svg
+                    className="animate-spin h-5 w-5"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                  >
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                )}
+              </span>
             </button>
           </form>
         </div>
