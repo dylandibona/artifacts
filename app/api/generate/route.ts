@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
     const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
-    const realism = "Photograph shot on 35mm film. Realistic.";
+    const realism = "Shot on 35mm film with visible grain, slightly out of focus, amateur photography aesthetic.";
 
     let prompt = "";
 
@@ -22,13 +22,12 @@ export async function POST(request: NextRequest) {
       case "Autobiography":
         const autobioSub = subtitle ? ` Subtitle: "${subtitle}"` : "";
         const autobioLocation = pickRandom([
-          "on a table at an estate sale",
-          "in a thrift store bin",
-          "displayed in a dusty bookstore window"
+          "on a table at an estate sale, price sticker visible",
+          "in a thrift store bin, spine sun-faded",
+          "displayed in a dusty used bookstore window"
         ]);
         prompt = `A photograph of a hardcover autobiography ${autobioLocation}.
-TEXT: Title "${phrase}" on the cover.${autobioSub}
-DESIGN STYLE: ${vibe}.
+The book titled "${phrase}" has cover art reflecting a ${vibe} aesthetic.${autobioSub}
 ${realism}`;
         break;
 
@@ -37,64 +36,59 @@ ${realism}`;
         const bizLocation = pickRandom([
           "on a table at an estate sale, other books stacked nearby",
           "in a thrift store bin, spine cracked",
-          "in a bookstore window display, slightly sun-faded"
+          "in an airport bookstore display, slightly sun-faded"
         ]);
-        prompt = `A photograph of a paperback business book ${bizLocation}.
-TEXT: Title "${phrase}" in bold, confident lettering.${bizSub}
-DESIGN STYLE: ${vibe}. Typical airport bookstore bestseller with endorsement quotes on cover.
+        prompt = `A photograph of a mass-market business paperback ${bizLocation}.
+The book "${phrase}" has bold confident typography and endorsement quotes on cover — the design reflects a ${vibe} aesthetic.${bizSub}
 ${realism}`;
         break;
 
       case "Vinyl Record":
         const vinylLocation = pickRandom([
           "in a thrift store record bin, other records visible",
-          "in a dusty crate at a record store",
+          "in a dusty crate at a record store, ring wear on sleeve",
           "on the floor near a turntable, rolling papers nearby"
         ]);
         prompt = `A photograph of a vinyl record sleeve ${vinylLocation}.
-TEXT: Album title "${phrase}" in typography that fits a ${vibe} aesthetic.
-DESIGN STYLE: ${vibe}.
+The album "${phrase}" has cover art and typography reflecting a ${vibe} aesthetic.
 ${realism}`;
         break;
 
       case "Gig Poster":
         const gigLocation = pickRandom([
-          "stapled to a telephone pole at night, shot with flash, tape peeling",
-          "pinned to a chaotic bulletin board in a grimy coffee shop, overlapping other flyers, torn corners, coffee stains",
-          "wheat-pasted on a crumbling brick wall, partially covered by newer posters"
+          "stapled to a telephone pole at night, shot with camera flash, tape peeling at corners",
+          "pinned to a messy bulletin board in a grimy coffee shop, overlapping torn flyers and handbills",
+          "wheat-pasted on a crumbling brick wall, edges torn, partially covered by newer posters"
         ]);
-        prompt = `A photograph of a concert poster ${gigLocation}.
-TEXT: "${phrase}" as the headline in typography that matches a ${vibe} aesthetic.
-DESIGN STYLE: ${vibe}.
+        prompt = `A photograph of a concert flyer ${gigLocation}.
+The flyer promotes "${phrase}" — the entire poster design (colors, layout, illustration style, and typography) reflects a ${vibe} aesthetic.
 ${realism}`;
         break;
 
       case "VHS Tape":
         const vhsLocation = pickRandom([
           "on a TV stand in a cramped, messy living room",
-          "in a thrift store bin with other tapes",
-          "in a cardboard box in an attic"
+          "in a thrift store bin with other tapes, plastic scratched",
+          "in a cardboard box in a dusty attic"
         ]);
         prompt = `A photograph of a VHS tape ${vhsLocation}.
-TEXT: Handwritten label reads "${phrase}" in marker.
-DESIGN STYLE: ${vibe}.
+A handwritten label reads "${phrase}" in marker on the spine — the overall aesthetic feels ${vibe}.
 ${realism}`;
         break;
 
       case "Cassette Tape":
         const cassetteLocation = pickRandom([
-          "on the dashboard of a beat-up old car",
-          "in a thrift store bin",
+          "on the dashboard of a beat-up old car, sun-faded",
+          "in a thrift store bin, plastic case cracked",
           "in a shoebox full of tapes"
         ]);
         prompt = `A photograph of a cassette tape in its case ${cassetteLocation}.
-TEXT: "${phrase}" printed on the J-card insert.
-DESIGN STYLE: ${vibe}.
+The J-card insert shows "${phrase}" — the design reflects a ${vibe} aesthetic.
 ${realism}`;
         break;
 
       default:
-        prompt = `A photograph of a vintage object. TEXT: "${phrase}". STYLE: ${vibe}. ${realism}`;
+        prompt = `A photograph of a vintage object labeled "${phrase}" with a ${vibe} aesthetic. ${realism}`;
     }
 
       const output = await replicate.run("ideogram-ai/ideogram-v3-quality", {
