@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
           "book with a dust jacket"
         ]);
         prompt = `A photograph of a ${bookFormat} ${bookLocation}.
-TEXT: Title "${phrase}" on the cover.${bookSub}
-The cover design — typography, colors, layout, imagery — reflects a ${vibe} aesthetic.
+TEXT: Title "${phrase}" on the cover — use typography that matches ${vibe} style.${bookSub}
+Cover design aesthetic: ${vibe}.
 ${realism}`;
         break;
 
