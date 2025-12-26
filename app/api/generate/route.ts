@@ -62,25 +62,26 @@ ${realism}`;
 
       case "VHS Tape":
         const vhsLocation = pickRandom([
-          "on a TV stand in a cluttered living room",
           "in a thrift store bin with other tapes",
-          "in a cardboard box in an attic"
+          "on a dusty shelf at a video rental store",
+          "in a cardboard box at a garage sale",
+          "on a cluttered coffee table"
         ]);
-        const vhsType = pickRandom(["homemade", "commercial"]);
-
-        if (vhsType === "homemade") {
-          prompt = `A photograph of a black VHS tape ${vhsLocation}.
-TEXT: A worn paper label with "${phrase}" scrawled in messy handwriting, ballpoint pen, slightly smudged.
-The plastic is scratched and dusty from years of use.
-${vibe} era home recording.
-${realism}`;
-        } else {
-          prompt = `A photograph of a commercial VHS tape in its cardboard sleeve ${vhsLocation}.
-TEXT: "${phrase}" as the movie title on the cover art.
-The sleeve is worn with creased edges and faded colors. Rental sticker residue visible.
+        const vhsGenre = pickRandom([
+          "action movie",
+          "thriller",
+          "romantic comedy",
+          "sci-fi B-movie",
+          "horror film",
+          "martial arts movie",
+          "cop drama",
+          "adventure film"
+        ]);
+        prompt = `A photograph of a VHS tape in its cardboard sleeve ${vhsLocation}.
+TEXT: "${phrase}" as the movie title on the cover.
+The cover art depicts an over-the-top ${vhsGenre} with dramatic poses and taglines.
 Cover art style: ${vibe}.
-${realism}`;
-        }
+The photograph looks vintage — shot on old film with light leaks, color fade, and soft focus.`;
         break;
 
       case "Cassette Tape":
