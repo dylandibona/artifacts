@@ -65,6 +65,19 @@ The flyer promotes "${phrase}" — the entire poster design (colors, layout, ill
 ${realism}`;
         break;
 
+      case "Punk Flyer":
+        const punkLocation = pickRandom([
+          "taped to a bathroom wall in a dive bar",
+          "stapled to a telephone pole, edges torn",
+          "pinned to a cork board at a record store"
+        ]);
+        prompt = `A photograph of a DIY punk show flyer ${punkLocation}.
+The flyer promotes "${phrase}".
+Black and white photocopied onto colored paper (pink, yellow, or goldenrod). Hand-drawn illustration, cut-and-paste ransom note typography, xerox aesthetic, chaotic layout crammed with text.
+${vibe} punk zine style.
+${realism}`;
+        break;
+
       case "VHS Tape":
         const vhsLocation = pickRandom([
           "on a TV stand in a cramped, messy living room",

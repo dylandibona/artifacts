@@ -128,6 +128,7 @@ export default function Home() {
                   <option value="Business Book">Business Book</option>
                   <option value="Vinyl Record">Vinyl Record</option>
                   <option value="Gig Poster">Gig Poster</option>
+                  <option value="Punk Flyer">Punk Flyer</option>
                   <option value="VHS Tape">VHS Tape</option>
                   <option value="Cassette Tape">Cassette in Box</option>
                 </select>
