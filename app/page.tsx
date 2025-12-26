@@ -149,8 +149,7 @@ export default function Home() {
                   style={{ fontFamily: "var(--font-mono)", fontWeight: 400 }}
                 >
                   <option value="">Choose...</option>
-                  <option value="Autobiography">Autobiography Book</option>
-                  <option value="Business Book">Business Book</option>
+                  <option value="Book">Book</option>
                   <option value="Vinyl Record">Vinyl Record</option>
                   <option value="Gig Flyer">Gig Flyer</option>
                   <option value="VHS Tape">VHS Tape</option>
@@ -165,14 +164,14 @@ export default function Home() {
             </div>
 
             {/* Subtitle - Only shows for Autobiography and Business Book */}
-            {(mediaType === "Autobiography" || mediaType === "Business Book") && (
+            {mediaType === "Book" && (
               <div className="animate-in fade-in slide-in-from-top-2">
                 <label className="block text-sm font-semibold uppercase mb-2 tracking-wide" style={{ fontFamily: "var(--font-body)" }}>Subtitle (Optional)</label>
                 <input
                   type="text"
                   value={subtitle}
                   onChange={(e) => setSubtitle(e.target.value)}
-                  placeholder="A memoir of triumph, scandal, or snacks"
+                  placeholder="Optional subtitle or tagline"
                   className="w-full bg-[#f4f1de] border-2 border-[#3d405b] p-3 text-lg rounded focus:outline-none focus:border-[#cc5500]"
                   style={{ fontFamily: "var(--font-mono)", fontWeight: 400 }}
                 />

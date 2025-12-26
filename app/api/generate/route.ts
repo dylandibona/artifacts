@@ -19,28 +19,22 @@ export async function POST(request: NextRequest) {
     let prompt = "";
 
     switch (mediaType) {
-      case "Autobiography":
-        const autobioSub = subtitle ? ` Subtitle: "${subtitle}"` : "";
-        const autobioLocation = pickRandom([
+      case "Book":
+        const bookSub = subtitle ? ` Subtitle: "${subtitle}"` : "";
+        const bookLocation = pickRandom([
           "on a table at an estate sale",
           "in a thrift store bin",
-          "displayed in a dusty bookstore window"
+          "displayed in a dusty bookstore window",
+          "on a shelf at a used bookstore"
         ]);
-        prompt = `A photograph of a hardcover autobiography ${autobioLocation}.
-TEXT: Title "${phrase}" on the cover.${autobioSub}
-The entire cover design — typography, colors, layout, and imagery — reflects a ${vibe} aesthetic.
-${realism}`;
-        break;
-
-      case "Business Book":
-        const bizSub = subtitle ? ` Subtitle: "${subtitle}"` : "";
-        const bizLocation = pickRandom([
-          "on a table at an estate sale, other books stacked nearby",
-          "in a thrift store bin, spine cracked",
-          "in an airport bookstore display, slightly sun-faded"
+        const bookFormat = pickRandom([
+          "hardcover book",
+          "paperback book",
+          "book with a dust jacket"
         ]);
-        prompt = `A photograph of a mass-market business paperback ${bizLocation}.
-The book "${phrase}" has bold confident typography and endorsement quotes on cover — the design reflects a ${vibe} aesthetic.${bizSub}
+        prompt = `A photograph of a ${bookFormat} ${bookLocation}.
+TEXT: Title "${phrase}" on the cover.${bookSub}
+The cover design — typography, colors, layout, imagery — reflects a ${vibe} aesthetic.
 ${realism}`;
         break;
 
