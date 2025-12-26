@@ -84,9 +84,9 @@ Design style: ${vibe}.`;
           "in a worn carrying case with other tapes"
         ]);
         prompt = `${photoStyle}
-Subject: A commercial music cassette tape in its plastic case ${cassetteLocation}.
-TEXT: "${phrase}" as the album title on the J-card insert.
-The J-card has professional album artwork and design — a real music release, not a homemade mixtape.
+Subject: A retail music cassette tape CASE ${cassetteLocation}. The clear plastic case shows the printed J-card insert with album cover artwork visible through the front.
+TEXT: "${phrase}" as the album title on the cover artwork.
+This is a professionally manufactured album release you would buy at a record store — NOT a blank tape, NOT a homemade mixtape.
 Design style: ${vibe}.`;
         break;
 
