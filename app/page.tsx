@@ -8,6 +8,7 @@ export default function Home() {
   const [submitter, setSubmitter] = useState("");
   const [mediaType, setMediaType] = useState("");
   const [vibe, setVibe] = useState("");
+  const [movieGenre, setMovieGenre] = useState("Action Movie");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -62,6 +63,7 @@ export default function Home() {
           submitter,
           mediaType,
           vibe,
+          movieGenre,
         }),
       });
 
@@ -147,7 +149,7 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Subtitle - Only shows for Autobiography and Business Book */}
+            {/* Subtitle - Only shows for Book */}
             {mediaType === "Book" && (
               <div className="animate-in fade-in slide-in-from-top-2">
                 <label className="block text-sm font-semibold uppercase mb-2 tracking-wide" style={{ fontFamily: "var(--font-body)" }}>Subtitle (Optional)</label>
@@ -159,6 +161,30 @@ export default function Home() {
                   className="w-full bg-[#f4f1de] border-2 border-[#3d405b] p-3 text-lg rounded focus:outline-none focus:border-[#cc5500]"
                   style={{ fontFamily: "var(--font-mono)", fontWeight: 400 }}
                 />
+              </div>
+            )}
+
+            {/* Movie Genre - Only shows for VHS Tape */}
+            {mediaType === "VHS Tape" && (
+              <div className="animate-in fade-in slide-in-from-top-2">
+                <label className="block text-sm font-semibold uppercase mb-2 tracking-wide" style={{ fontFamily: "var(--font-body)" }}>Movie Genre</label>
+                <select
+                  value={movieGenre}
+                  onChange={(e) => setMovieGenre(e.target.value)}
+                  className="w-full bg-[#f4f1de] border-2 border-[#3d405b] p-3 text-lg rounded focus:outline-none focus:border-[#cc5500]"
+                  style={{ fontFamily: "var(--font-mono)", fontWeight: 400 }}
+                >
+                  <option value="Action Movie">Action Movie</option>
+                  <option value="Thriller">Thriller</option>
+                  <option value="Romantic Comedy">Romantic Comedy</option>
+                  <option value="Sci-Fi B-Movie">Sci-Fi B-Movie</option>
+                  <option value="Horror Film">Horror Film</option>
+                  <option value="Martial Arts Movie">Martial Arts Movie</option>
+                  <option value="Cop Drama">Cop Drama</option>
+                  <option value="Adventure Film">Adventure Film</option>
+                  <option value="Erotic Thriller">Erotic Thriller</option>
+                  <option value="Slasher Film">Slasher Film</option>
+                </select>
               </div>
             )}
 

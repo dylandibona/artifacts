@@ -3,7 +3,7 @@ import Replicate from "replicate";
 
 export async function POST(request: NextRequest) {
   try {
-    const { phrase, subtitle, mediaType, vibe: rawVibe } = await request.json();
+    const { phrase, subtitle, mediaType, vibe: rawVibe, movieGenre } = await request.json();
     const vibe = rawVibe ? rawVibe.replace(/,\s*/g, " and ") : "";
 
     if (!phrase) {
@@ -69,20 +69,10 @@ Design style: ${vibe}.`;
           "in a cardboard box at a garage sale",
           "on a cluttered coffee table"
         ]);
-        const vhsGenre = pickRandom([
-          "action movie",
-          "thriller",
-          "romantic comedy",
-          "sci-fi B-movie",
-          "horror film",
-          "martial arts movie",
-          "cop drama",
-          "adventure film"
-        ]);
         prompt = `${photoStyle}
 Subject: A VHS tape in its cardboard sleeve ${vhsLocation}.
 TEXT: "${phrase}" as the movie title on the cover.
-The cover art depicts an over-the-top ${vhsGenre} with dramatic poses.
+The cover art depicts an over-the-top ${movieGenre} with dramatic poses.
 Design style: ${vibe}.`;
         break;
 
