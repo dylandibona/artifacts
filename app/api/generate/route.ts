@@ -84,9 +84,8 @@ Design style: ${vibe}.`;
           "in a worn carrying case with other tapes"
         ]);
         prompt = `${photoStyle}
-Subject: A retail music cassette tape CASE ${cassetteLocation}. The clear plastic case shows the printed J-card insert with album cover artwork visible through the front.
-TEXT: "${phrase}" as the album title on the cover artwork.
-This is a professionally manufactured album release you would buy at a record store — NOT a blank tape, NOT a homemade mixtape.
+Subject: A major label cassette tape album ${cassetteLocation}. Clear plastic case with factory-printed J-card insert showing professional album artwork. Record label logo and barcode visible. Store-bought retail packaging.
+TEXT: "${phrase}" as the album title.
 Design style: ${vibe}.`;
         break;
 
