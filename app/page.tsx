@@ -12,6 +12,7 @@ export default function Home() {
   const [flyerStyle, setFlyerStyle] = useState("");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [showOverlay, setShowOverlay] = useState(false);
 
   useEffect(() => {
     const savedSubmitter = localStorage.getItem("submitter");
@@ -80,6 +81,7 @@ export default function Home() {
       const data = await res.json();
       if (data.url) {
         setGeneratedImage(data.url);
+        setShowOverlay(true);
         playSound('/sounds/microwave-timer.mp3');
       } else alert("Failed to generate: " + (data.error || "Unknown error"));
     } catch (error) {
@@ -299,6 +301,95 @@ export default function Home() {
           </div>
         )}
       </div>
+
+      {/* Polaroid Overlay */}
+      {showOverlay && generatedImage && (
+        <div
+          className="fixed inset-0 bg-black/80 z-50 flex flex-col items-center justify-center"
+          onClick={() => setShowOverlay(false)}
+        >
+          {/* Polaroid frame - tilted */}
+          <div
+            className="animate-eject bg-[#f5f5f0] p-3 pb-14 shadow-[0_25px_50px_-12px_rgba(0,0,0,0.5)] border border-[#e5e5e0] rotate-[-2deg]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={generatedImage}
+              alt="Generated artifact"
+              className="animate-develop max-w-[75vw] max-h-[55vh] object-contain shadow-inner"
+            />
+          </div>
+
+          {/* Action buttons */}
+          <div
+            className="flex gap-3 mt-6 animate-fade-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => {
+                setShowOverlay(false);
+                document.querySelector('form')?.requestSubmit();
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#f5f5f0] border border-[#d5d5d0] rounded shadow-sm hover:bg-[#eaeae5] transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              Remix
+            </button>
+
+            <button
+              onClick={async () => {
+                try {
+                  const response = await fetch(generatedImage);
+                  const blob = await response.blob();
+                  await navigator.clipboard.write([
+                    new ClipboardItem({ [blob.type]: blob })
+                  ]);
+                } catch (err) {
+                  console.error('Failed to copy:', err);
+                }
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#f5f5f0] border border-[#d5d5d0] rounded shadow-sm hover:bg-[#eaeae5] transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              Copy
+            </button>
+
+            <button
+              onClick={async () => {
+                try {
+                  const response = await fetch(generatedImage);
+                  const blob = await response.blob();
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `artifact-${Date.now()}.png`;
+                  document.body.appendChild(a);
+                  a.click();
+                  document.body.removeChild(a);
+                  window.URL.revokeObjectURL(url);
+                } catch (err) {
+                  console.error('Failed to download:', err);
+                }
+              }}
+              className="flex items-center gap-2 px-5 py-2.5 bg-[#3d3d5c] text-white rounded shadow-sm hover:bg-[#4d4d6c] transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Download
+            </button>
+          </div>
+
+          {/* Dismiss hint */}
+          <p className="mt-4 text-white/40 text-sm">
+            tap anywhere to dismiss
+          </p>
+        </div>
+      )}
     </main>
   );
 }

@@ -75,3 +75,60 @@ textarea::placeholder {
   font-family: var(--font-mono) !important;
   font-weight: 400;
 }
+
+/* Polaroid eject animation */
+@keyframes eject {
+  0% {
+    transform: translateY(100vh) rotate(5deg);
+    opacity: 0;
+  }
+  60% {
+    transform: translateY(-20px) rotate(-3deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) rotate(-2deg);
+    opacity: 1;
+  }
+}
+
+/* Polaroid develop animation */
+@keyframes develop {
+  0% {
+    filter: brightness(3) saturate(0) blur(8px);
+  }
+  30% {
+    filter: brightness(1.8) saturate(0.3) blur(4px);
+  }
+  60% {
+    filter: brightness(1.2) saturate(0.7) blur(1px);
+  }
+  100% {
+    filter: brightness(1) saturate(1) blur(0);
+  }
+}
+
+/* Fade in for buttons */
+@keyframes fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-eject {
+  animation: eject 0.6s ease-out forwards;
+}
+
+.animate-develop {
+  animation: develop 2.5s ease-out forwards;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out 0.5s forwards;
+  opacity: 0;
+}
