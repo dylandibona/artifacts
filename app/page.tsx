@@ -9,6 +9,7 @@ export default function Home() {
   const [mediaType, setMediaType] = useState("");
   const [vibe, setVibe] = useState("");
   const [movieGenre, setMovieGenre] = useState("Action Movie");
+  const [flyerStyle, setFlyerStyle] = useState("");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,6 +45,14 @@ export default function Home() {
     setVibe(vibes[Math.floor(Math.random() * vibes.length)]);
   };
 
+  const flyerStyleOptions = [
+    { label: "60s Psychedelic (Fillmore)", value: "1960s San Francisco psychedelic concert poster with flowing Art Nouveau lettering, vibrant swirling colors, hallucinogenic imagery, and ornate borders" },
+    { label: "70s Punk DIY", value: "DIY punk zine aesthetic, photocopied black and white, ransom note cut-out lettering, chaotic collage, aggressive and raw" },
+    { label: "80s New Wave", value: "1980s new wave poster with bold geometric shapes, neon colors on black, angular sans-serif typography, Memphis design influence" },
+    { label: "90s Deconstructed (Ray Gun era)", value: "1990s deconstructed graphic design, fragmented and layered typography, intentionally chaotic layout, grunge textures, experimental and illegible type treatments, mixed media collage" },
+    { label: "Hatch Show Print", value: "vintage woodblock letterpress poster, bold slab serif typography, limited two-color palette, rustic Americana, hand-carved block print aesthetic" }
+  ];
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!phrase || !mediaType) return;
@@ -64,6 +73,7 @@ export default function Home() {
           mediaType,
           vibe,
           movieGenre,
+          flyerStyle,
         }),
       });
 
@@ -185,6 +195,33 @@ export default function Home() {
                   <option value="Erotic Thriller">Erotic Thriller</option>
                   <option value="Slasher Film">Slasher Film</option>
                 </select>
+              </div>
+            )}
+
+            {/* Poster Style - Only shows for Gig Flyer */}
+            {mediaType === "Gig Flyer" && (
+              <div className="animate-in fade-in slide-in-from-top-2">
+                <label className="block text-sm font-semibold uppercase mb-2 tracking-wide" style={{ fontFamily: "var(--font-body)" }}>Poster Style</label>
+                <div className="relative">
+                  <select
+                    value={flyerStyle}
+                    onChange={(e) => setFlyerStyle(e.target.value)}
+                    className="w-full bg-[#f4f1de] border-2 border-[#3d405b] p-3 pr-10 rounded appearance-none focus:outline-none focus:border-[#cc5500]"
+                    style={{ fontFamily: "var(--font-mono)", fontWeight: 400 }}
+                  >
+                    <option value="">Select a style...</option>
+                    {flyerStyleOptions.map((style) => (
+                      <option key={style.label} value={style.value}>
+                        {style.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#3d405b]">
+                    <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                    </svg>
+                  </div>
+                </div>
               </div>
             )}
 

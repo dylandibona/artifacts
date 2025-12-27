@@ -3,7 +3,7 @@ import Replicate from "replicate";
 
 export async function POST(request: NextRequest) {
   try {
-    const { phrase, subtitle, mediaType, vibe: rawVibe, movieGenre } = await request.json();
+    const { phrase, subtitle, mediaType, vibe: rawVibe, movieGenre, flyerStyle } = await request.json();
     const vibe = rawVibe ? rawVibe.replace(/,\s*/g, " and ") : "";
 
     if (!phrase) {
@@ -53,15 +53,16 @@ ${realism}`;
         break;
 
       case "Gig Flyer":
-        const gigLocation = pickRandom([
-          "stapled to a telephone pole at night, shot with camera flash, tape peeling at corners",
-          "pinned to a messy bulletin board in a grimy coffee shop, overlapping torn flyers and handbills",
-          "wheat-pasted on a crumbling brick wall, edges torn, partially covered by newer posters"
+        const flyerLocation = pickRandom([
+          "stapled to a telephone pole at night, shot with flash",
+          "wheat-pasted on a crumbling brick wall",
+          "pinned to a cluttered coffee shop bulletin board"
         ]);
-        prompt = `A close-up photo of a concert flyer ${gigLocation}.
-The flyer promotes "${phrase}" as the band or event name.
-The flyer design style is ${vibe}.
-The paper is weathered, torn at the edges, with tape residue.
+        const styleToUse = flyerStyle || vibe || "bold graphic design";
+        prompt = `A photograph of a concert flyer ${flyerLocation}.
+The poster announces the band "${phrase}" in prominent lettering.
+Poster design style: ${styleToUse}.
+The paper is weathered with torn edges and visible wear.
 ${realism}`;
         break;
 
@@ -106,7 +107,7 @@ ${realism}`;
             prompt: prompt,
             aspect_ratio: "1:1",
             style_type: "Realistic",
-            magic_prompt_option: "Auto"
+            magic_prompt_option: "Off"
         }
       });
 
