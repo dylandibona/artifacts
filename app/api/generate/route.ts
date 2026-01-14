@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import Replicate from "replicate";
+import { v2 as cloudinary } from "cloudinary";
+import { sql } from "@vercel/postgres";
+
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,6 +17,13 @@ export async function POST(request: NextRequest) {
     if (!phrase) {
       return NextResponse.json({ error: "Phrase is required" }, { status: 400 });
     }
+
+    // Extract IP and location from headers (Vercel provides these)
+    const ipAddress = request.headers.get("x-forwarded-for")?.split(",")[0] ||
+                      request.headers.get("x-real-ip") ||
+                      "unknown";
+    const city = request.headers.get("x-vercel-ip-city") || null;
+    const country = request.headers.get("x-vercel-ip-country") || null;
 
     const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
@@ -106,17 +121,41 @@ The design style is ${vibe}.
 ${defaultRealism}`;
     }
 
-      const output = await replicate.run("ideogram-ai/ideogram-v3-quality", {
-        input: {
-            prompt: prompt,
-            aspect_ratio: "1:1",
-            style_type: "Realistic",
-            magic_prompt_option: "Off"
-        }
-      });
+    // Generate image with Replicate
+    const output = await replicate.run("ideogram-ai/ideogram-v3-quality", {
+      input: {
+        prompt: prompt,
+        aspect_ratio: "1:1",
+        style_type: "Realistic",
+        magic_prompt_option: "Off"
+      }
+    });
 
-    const imageUrl = Array.isArray(output) ? output[0] : String(output);
-    return NextResponse.json({ url: imageUrl });
+    const replicateUrl = Array.isArray(output) ? output[0] : String(output);
+
+    // Upload to Cloudinary for permanent storage
+    let cloudinaryUrl = replicateUrl; // fallback to replicate URL if upload fails
+    try {
+      const uploadResult = await cloudinary.uploader.upload(replicateUrl, {
+        folder: "artifacts",
+        resource_type: "image",
+      });
+      cloudinaryUrl = uploadResult.secure_url;
+    } catch (uploadError) {
+      console.error("Cloudinary upload failed, using Replicate URL:", uploadError);
+    }
+
+    // Log to database (non-blocking - don't fail the request if DB is unavailable)
+    try {
+      await sql`
+        INSERT INTO generations (ip_address, city, country, phrase, subtitle, media_type, vibe, movie_genre, flyer_style, image_url, replicate_url)
+        VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${cloudinaryUrl}, ${replicateUrl})
+      `;
+    } catch (dbError) {
+      console.error("Database logging failed:", dbError);
+    }
+
+    return NextResponse.json({ url: cloudinaryUrl });
 
   } catch (error) {
     console.error("Error generating image:", error);

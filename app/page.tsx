@@ -100,13 +100,46 @@ export default function Home() {
 
   const copyToClipboard = async (imageUrl: string) => {
     try {
-      const response = await fetch(imageUrl);
-      const blob = await response.blob();
-      await navigator.clipboard.write([new ClipboardItem({ [blob.type]: blob })]);
+      // Use an image element + canvas to avoid CORS issues
+      const img = new Image();
+      img.crossOrigin = "anonymous";
+
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("Failed to load image"));
+        img.src = imageUrl;
+      });
+
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const ctx = canvas.getContext("2d");
+      ctx?.drawImage(img, 0, 0);
+
+      const blob = await new Promise<Blob>((resolve, reject) => {
+        canvas.toBlob((b) => {
+          if (b) resolve(b);
+          else reject(new Error("Failed to create blob"));
+        }, "image/png");
+      });
+
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
       alert("Artifact copied to clipboard!");
     } catch (err) {
       console.error("Failed to copy:", err);
-      alert("Could not copy image automatically. Right-click and select 'Copy Image'.");
+      // Fallback: try native share on mobile
+      if (navigator.share && /iPhone|iPad|Android/i.test(navigator.userAgent)) {
+        try {
+          await navigator.share({
+            title: "My Artifact",
+            url: imageUrl,
+          });
+        } catch {
+          alert("Could not copy. Long-press the image to save or share.");
+        }
+      } else {
+        alert("Could not copy image automatically. Right-click and select 'Copy Image'.");
+      }
     }
   };
 
@@ -339,17 +372,7 @@ export default function Home() {
             </button>
 
             <button
-              onClick={async () => {
-                try {
-                  const response = await fetch(generatedImage);
-                  const blob = await response.blob();
-                  await navigator.clipboard.write([
-                    new ClipboardItem({ [blob.type]: blob })
-                  ]);
-                } catch (err) {
-                  console.error('Failed to copy:', err);
-                }
-              }}
+              onClick={() => copyToClipboard(generatedImage)}
               className="flex items-center gap-2 px-5 py-2.5 bg-[#f5f5f0] border border-[#d5d5d0] rounded shadow-sm hover:bg-[#eaeae5] transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -361,18 +384,33 @@ export default function Home() {
             <button
               onClick={async () => {
                 try {
-                  const response = await fetch(generatedImage);
-                  const blob = await response.blob();
-                  const url = window.URL.createObjectURL(blob);
+                  // Use canvas approach to avoid CORS issues
+                  const img = new Image();
+                  img.crossOrigin = "anonymous";
+
+                  await new Promise<void>((resolve, reject) => {
+                    img.onload = () => resolve();
+                    img.onerror = () => reject(new Error("Failed to load image"));
+                    img.src = generatedImage;
+                  });
+
+                  const canvas = document.createElement("canvas");
+                  canvas.width = img.naturalWidth;
+                  canvas.height = img.naturalHeight;
+                  const ctx = canvas.getContext("2d");
+                  ctx?.drawImage(img, 0, 0);
+
+                  const url = canvas.toDataURL("image/png");
                   const a = document.createElement('a');
                   a.href = url;
                   a.download = `artifact-${Date.now()}.png`;
                   document.body.appendChild(a);
                   a.click();
                   document.body.removeChild(a);
-                  window.URL.revokeObjectURL(url);
                 } catch (err) {
                   console.error('Failed to download:', err);
+                  // Fallback: open in new tab
+                  window.open(generatedImage, '_blank');
                 }
               }}
               className="flex items-center gap-2 px-5 py-2.5 bg-[#3d3d5c] text-white rounded shadow-sm hover:bg-[#4d4d6c] transition-colors"
