@@ -1,6 +1,21 @@
 import { sql } from "@vercel/postgres";
 
+// Force dynamic rendering - no caching
+export const dynamic = "force-dynamic";
+
 const COST_PER_IMAGE = 0.08; // ideogram-v3-quality approximate cost
+
+function formatCentralTime(dateStr: string): string {
+  return new Date(dateStr).toLocaleString("en-US", {
+    timeZone: "America/Chicago",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
 
 interface Generation {
   id: number;
@@ -129,7 +144,7 @@ export default async function AdminPage() {
                       <span>{gen.ip_address}</span>
                     </div>
                     <div className="mt-1 text-[#555]">
-                      {new Date(gen.created_at).toLocaleString()}
+                      {formatCentralTime(gen.created_at)} CT
                     </div>
                   </div>
                 </div>

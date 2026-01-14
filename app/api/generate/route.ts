@@ -123,17 +123,37 @@ The design style is ${vibe}.
 ${defaultRealism}`;
     }
 
-    // Generate image with Replicate
-    const output = await replicate.run("ideogram-ai/ideogram-v3-quality", {
-      input: {
-        prompt: prompt,
-        aspect_ratio: "1:1",
-        style_type: "Realistic",
-        magic_prompt_option: "Off"
-      }
-    });
+    // Generate image with Replicate - try Recraft V3 first, fallback to Ideogram
+    let replicateUrl: string;
+    let modelUsed = "recraft-v3";
 
-    const replicateUrl = Array.isArray(output) ? output[0] : String(output);
+    try {
+      // Try Recraft V3 first (best text rendering)
+      const output = await replicate.run("recraft-ai/recraft-v3", {
+        input: {
+          prompt: prompt,
+          aspect_ratio: "1:1",
+          style: "realistic_image",
+        }
+      });
+      replicateUrl = Array.isArray(output) ? output[0] : String(output);
+    } catch (recraftError) {
+      console.error("Recraft V3 failed, falling back to Ideogram:", recraftError);
+      modelUsed = "ideogram-v3";
+
+      // Fallback to Ideogram V3 Quality
+      const output = await replicate.run("ideogram-ai/ideogram-v3-quality", {
+        input: {
+          prompt: prompt,
+          aspect_ratio: "1:1",
+          style_type: "Realistic",
+          magic_prompt_option: "Off"
+        }
+      });
+      replicateUrl = Array.isArray(output) ? output[0] : String(output);
+    }
+
+    console.log(`Image generated with ${modelUsed}`);
 
     // Upload to Cloudinary for permanent storage
     let cloudinaryUrl = replicateUrl; // fallback to replicate URL if upload fails
