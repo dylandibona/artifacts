@@ -22,8 +22,10 @@ export async function POST(request: NextRequest) {
     const ipAddress = request.headers.get("x-forwarded-for")?.split(",")[0] ||
                       request.headers.get("x-real-ip") ||
                       "unknown";
-    const city = request.headers.get("x-vercel-ip-city") || null;
-    const country = request.headers.get("x-vercel-ip-country") || null;
+    const rawCity = request.headers.get("x-vercel-ip-city");
+    const rawCountry = request.headers.get("x-vercel-ip-country");
+    const city = rawCity ? decodeURIComponent(rawCity) : null;
+    const country = rawCountry ? decodeURIComponent(rawCountry) : null;
 
     const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
 
