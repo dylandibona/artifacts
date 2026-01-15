@@ -11,7 +11,7 @@ cloudinary.config({
 
 export async function POST(request: NextRequest) {
   try {
-    const { phrase, subtitle, mediaType, vibe: rawVibe, movieGenre, flyerStyle } = await request.json();
+    const { phrase, subtitle, mediaType, vibe: rawVibe, movieGenre, flyerStyle, modelChoice } = await request.json();
     const vibe = rawVibe ? rawVibe.replace(/,\s*/g, " and ") : "";
 
     if (!phrase) {
@@ -123,12 +123,12 @@ The design style is ${vibe}.
 ${defaultRealism}`;
     }
 
-    // Generate image with Replicate - try Recraft V3 first, fallback to Ideogram
+    // Generate image with Replicate based on user's model choice
+    // "xi" (Node Ξ) = Recraft V3, "null" (Node ∅) = Ideogram V3
     let replicateUrl: string;
-    let modelUsed = "recraft-v3";
+    let modelUsed = modelChoice === "xi" ? "recraft-v3" : "ideogram-v3";
 
-    try {
-      // Try Recraft V3 first (best text rendering)
+    const runRecraft = async () => {
       const output = await replicate.run("recraft-ai/recraft-v3", {
         input: {
           prompt: prompt,
@@ -136,12 +136,10 @@ ${defaultRealism}`;
           style: "realistic_image",
         }
       });
-      replicateUrl = Array.isArray(output) ? output[0] : String(output);
-    } catch (recraftError) {
-      console.error("Recraft V3 failed, falling back to Ideogram:", recraftError);
-      modelUsed = "ideogram-v3";
+      return Array.isArray(output) ? output[0] : String(output);
+    };
 
-      // Fallback to Ideogram V3 Quality
+    const runIdeogram = async () => {
       const output = await replicate.run("ideogram-ai/ideogram-v3-quality", {
         input: {
           prompt: prompt,
@@ -150,7 +148,24 @@ ${defaultRealism}`;
           magic_prompt_option: "Off"
         }
       });
-      replicateUrl = Array.isArray(output) ? output[0] : String(output);
+      return Array.isArray(output) ? output[0] : String(output);
+    };
+
+    try {
+      if (modelChoice === "xi") {
+        replicateUrl = await runRecraft();
+      } else {
+        replicateUrl = await runIdeogram();
+      }
+    } catch (primaryError) {
+      console.error(`${modelUsed} failed, falling back to other model:`, primaryError);
+      // Fallback to the other model
+      modelUsed = modelChoice === "xi" ? "ideogram-v3" : "recraft-v3";
+      if (modelChoice === "xi") {
+        replicateUrl = await runIdeogram();
+      } else {
+        replicateUrl = await runRecraft();
+      }
     }
 
     console.log(`Image generated with ${modelUsed}`);

@@ -13,6 +13,7 @@ export default function Home() {
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
+  const [modelChoice, setModelChoice] = useState<"xi" | "null" | null>(null);
 
   useEffect(() => {
     const savedSubmitter = localStorage.getItem("submitter");
@@ -56,7 +57,7 @@ export default function Home() {
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!phrase || !mediaType) return;
+    if (!phrase || !mediaType || !modelChoice) return;
 
     setIsLoading(true);
     setGeneratedImage(null);
@@ -75,6 +76,7 @@ export default function Home() {
           vibe,
           movieGenre,
           flyerStyle,
+          modelChoice,
         }),
       });
 
@@ -284,10 +286,53 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Model Choice Toggle */}
+            <div className="flex flex-col items-center gap-3 pt-2">
+              <div className="flex items-center gap-4 w-full justify-center">
+                <button
+                  type="button"
+                  onClick={() => setModelChoice("xi")}
+                  className={`text-sm font-semibold uppercase tracking-wide transition-all hover:opacity-100 ${modelChoice === "xi" ? "opacity-100" : "opacity-40"}`}
+                  style={{ fontFamily: "var(--font-mono)" }}
+                >
+                  Node Ξ
+                </button>
+
+                <div
+                  className="toggle-track group"
+                  onClick={(e) => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const clickX = e.clientX - rect.left;
+                    if (clickX < rect.width / 2) {
+                      setModelChoice("xi");
+                    } else {
+                      setModelChoice("null");
+                    }
+                  }}
+                >
+                  <div className="toggle-inner">
+                    <div className={`toggle-knob ${
+                      modelChoice === null ? "position-middle" :
+                      modelChoice === "xi" ? "position-left" : "position-right"
+                    }`} />
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setModelChoice("null")}
+                  className={`text-sm font-semibold uppercase tracking-wide transition-all hover:opacity-100 ${modelChoice === "null" ? "opacity-100" : "opacity-40"}`}
+                  style={{ fontFamily: "var(--font-mono)" }}
+                >
+                  Node ∅
+                </button>
+              </div>
+            </div>
+
             <button
               type="submit"
-              disabled={isLoading || !phrase || !mediaType}
-              className={`w-full py-4 text-xl uppercase tracking-wider border-2 border-[#3d405b] rounded transition-all ${isLoading ? "bg-[#2d2f45] text-[#a0a0a0] cursor-wait shadow-inner transform scale-[0.98]" : !phrase || !mediaType ? "bg-gray-400 cursor-not-allowed shadow-[4px_4px_0px_0px_rgba(61,64,91,1)]" : "bg-[#cc5500] text-white hover:bg-[#dd6611] shadow-[4px_4px_0px_0px_rgba(61,64,91,1)] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(61,64,91,1)]"}`}
+              disabled={isLoading || !phrase || !mediaType || !modelChoice}
+              className={`w-full py-4 text-xl uppercase tracking-wider border-2 border-[#3d405b] rounded transition-all ${isLoading ? "bg-[#2d2f45] text-[#a0a0a0] cursor-wait shadow-inner transform scale-[0.98]" : !phrase || !mediaType || !modelChoice ? "bg-gray-400 cursor-not-allowed shadow-[4px_4px_0px_0px_rgba(61,64,91,1)]" : "bg-[#cc5500] text-white hover:bg-[#dd6611] shadow-[4px_4px_0px_0px_rgba(61,64,91,1)] active:translate-y-[2px] active:shadow-[2px_2px_0px_0px_rgba(61,64,91,1)]"}`}
               style={{ fontFamily: "var(--font-body)", fontWeight: 700, letterSpacing: "0.05em" }}
             >
               <span className="flex items-center justify-center gap-2">
