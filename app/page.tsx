@@ -100,6 +100,22 @@ export default function Home() {
     audio.play().catch(() => {});
   };
 
+  const playClick = () => {
+    try {
+      const ctx = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      const oscillator = ctx.createOscillator();
+      const gain = ctx.createGain();
+      oscillator.connect(gain);
+      gain.connect(ctx.destination);
+      oscillator.frequency.value = 800;
+      oscillator.type = "triangle";
+      gain.gain.setValueAtTime(0.3, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.004);
+      oscillator.start(ctx.currentTime);
+      oscillator.stop(ctx.currentTime + 0.015);
+    } catch {}
+  };
+
   const copyToClipboard = async (imageUrl: string) => {
     try {
       // Use an image element + canvas to avoid CORS issues
@@ -291,7 +307,7 @@ export default function Home() {
               <div className="flex items-center gap-4 w-full justify-center">
                 <button
                   type="button"
-                  onClick={() => setModelChoice("xi")}
+                  onClick={() => { setModelChoice("xi"); playClick(); }}
                   className={`text-sm font-semibold uppercase tracking-wide transition-all hover:opacity-100 ${modelChoice === "xi" ? "opacity-100" : "opacity-40"}`}
                   style={{ fontFamily: "var(--font-mono)" }}
                 >
@@ -303,6 +319,7 @@ export default function Home() {
                   onClick={(e) => {
                     const rect = e.currentTarget.getBoundingClientRect();
                     const clickX = e.clientX - rect.left;
+                    playClick();
                     if (clickX < rect.width / 2) {
                       setModelChoice("xi");
                     } else {
@@ -320,7 +337,7 @@ export default function Home() {
 
                 <button
                   type="button"
-                  onClick={() => setModelChoice("null")}
+                  onClick={() => { setModelChoice("null"); playClick(); }}
                   className={`text-sm font-semibold uppercase tracking-wide transition-all hover:opacity-100 ${modelChoice === "null" ? "opacity-100" : "opacity-40"}`}
                   style={{ fontFamily: "var(--font-mono)" }}
                 >
