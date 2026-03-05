@@ -11,7 +11,8 @@ export function middleware(request: NextRequest) {
 
     const authCookie = request.cookies.get("admin_auth");
 
-    if (!authCookie || authCookie.value !== `${ADMIN_USERNAME}:${ADMIN_PASSWORD}`) {
+    const cookieValue = authCookie ? decodeURIComponent(authCookie.value) : "";
+    if (!authCookie || cookieValue !== `${ADMIN_USERNAME}:${ADMIN_PASSWORD}`) {
       // Redirect to login page
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
