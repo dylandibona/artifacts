@@ -124,16 +124,15 @@ ${defaultRealism}`;
     }
 
     // Generate image with Replicate based on user's model choice
-    // "xi" (Node Ξ) = Recraft V3, "null" (Node ∅) = Ideogram V3
+    // "xi" (Node Ξ) = Recraft V4, "null" (Node ∅) = Ideogram V3
     let replicateUrl: string;
-    let modelUsed = modelChoice === "xi" ? "recraft-v3" : "ideogram-v3";
+    let modelUsed = modelChoice === "xi" ? "recraft-v4" : "ideogram-v3";
 
     const runRecraft = async () => {
-      const output = await replicate.run("recraft-ai/recraft-v3", {
+      const output = await replicate.run("recraft-ai/recraft-v4", {
         input: {
           prompt: prompt,
           aspect_ratio: "1:1",
-          style: "realistic_image",
         }
       });
       return Array.isArray(output) ? output[0] : String(output);
@@ -160,7 +159,7 @@ ${defaultRealism}`;
     } catch (primaryError) {
       console.error(`${modelUsed} failed, falling back to other model:`, primaryError);
       // Fallback to the other model
-      modelUsed = modelChoice === "xi" ? "ideogram-v3" : "recraft-v3";
+      modelUsed = modelChoice === "xi" ? "ideogram-v3" : "recraft-v4";
       if (modelChoice === "xi") {
         replicateUrl = await runIdeogram();
       } else {
