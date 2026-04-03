@@ -10,6 +10,7 @@ export default function Home() {
   const [vibe, setVibe] = useState("");
   const [movieGenre, setMovieGenre] = useState("Action Movie");
   const [flyerStyle, setFlyerStyle] = useState("");
+  const [scentStyle, setScentStyle] = useState("");
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showOverlay, setShowOverlay] = useState(false);
@@ -55,6 +56,24 @@ export default function Home() {
     { label: "Hatch Show Print", value: "vintage woodblock letterpress poster, bold slab serif typography, limited two-color palette, rustic Americana, hand-carved block print aesthetic" }
   ];
 
+  const scentStyleOptions = [
+    { label: "Seductive", value: "seductive and sensual" },
+    { label: "Fresh", value: "fresh and clean" },
+    { label: "Mysterious", value: "dark and mysterious" },
+    { label: "Powerful", value: "bold and powerful" },
+    { label: "1970s America", value: "1970s American glamour" },
+    { label: "Unhinged Luxury", value: "unhinged over-the-top luxury" },
+    { label: "Department Store Elegance", value: "department store elegance" },
+    { label: "Gas Station Chic", value: "gas station bathroom chic" },
+    { label: "Old Money", value: "old money sophistication" },
+    { label: "New Money", value: "flashy new money" },
+    { label: "Coastal Grandmother", value: "coastal grandmother aesthetic" },
+    { label: "Divorced Dad", value: "divorced dad energy" },
+    { label: "Night Out", value: "night out on the town" },
+    { label: "Morning After", value: "the morning after" },
+    { label: "Other", value: "" }
+  ];
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!phrase || !mediaType || !modelChoice) return;
@@ -76,6 +95,7 @@ export default function Home() {
           vibe,
           movieGenre,
           flyerStyle,
+          scentStyle,
           modelChoice,
         }),
       });
@@ -180,7 +200,7 @@ export default function Home() {
               <textarea
                 value={phrase}
                 onChange={(e) => setPhrase(e.target.value)}
-                placeholder="The name of your fake band, book, or movie..."
+                placeholder="What is it called?"
                 rows={2}
                 className="w-full bg-[#f4f1de] border-2 border-[#3d405b] p-4 text-2xl focus:outline-none focus:ring-4 ring-[#cc5500] rounded-lg resize-none"
                 style={{ fontFamily: "var(--font-body)", fontWeight: 600, letterSpacing: "0.01em" }}
@@ -203,6 +223,7 @@ export default function Home() {
                   <option value="Gig Flyer">Gig Flyer</option>
                   <option value="VHS Tape">VHS Tape</option>
                   <option value="Cassette Tape">Cassette Tape</option>
+                  <option value="Eau de Toilet">Eau de Toilet</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#3d405b]">
                   <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -264,6 +285,33 @@ export default function Home() {
                   >
                     <option value="">Select a style...</option>
                     {flyerStyleOptions.map((style) => (
+                      <option key={style.label} value={style.value}>
+                        {style.label}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#3d405b]">
+                    <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                      <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/>
+                    </svg>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Scent Style - Only shows for Eau de Toilet */}
+            {mediaType === "Eau de Toilet" && (
+              <div className="animate-in fade-in slide-in-from-top-2">
+                <label className="block text-sm font-semibold uppercase mb-2 tracking-wide" style={{ fontFamily: "var(--font-body)" }}>Scent Style</label>
+                <div className="relative">
+                  <select
+                    value={scentStyle}
+                    onChange={(e) => setScentStyle(e.target.value)}
+                    className="w-full bg-[#f4f1de] border-2 border-[#3d405b] p-3 pr-10 rounded appearance-none focus:outline-none focus:border-[#cc5500]"
+                    style={{ fontFamily: "var(--font-mono)", fontWeight: 400 }}
+                  >
+                    <option value="">Select a style...</option>
+                    {scentStyleOptions.map((style) => (
                       <option key={style.label} value={style.value}>
                         {style.label}
                       </option>

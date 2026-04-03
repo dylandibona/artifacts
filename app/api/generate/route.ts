@@ -11,7 +11,7 @@ cloudinary.config({
 
 export async function POST(request: NextRequest) {
   try {
-    const { phrase, subtitle, mediaType, vibe: rawVibe, movieGenre, flyerStyle, modelChoice } = await request.json();
+    const { phrase, subtitle, mediaType, vibe: rawVibe, movieGenre, flyerStyle, scentStyle, modelChoice } = await request.json();
     const vibe = rawVibe ? rawVibe.replace(/,\s*/g, " and ") : "";
 
     if (!phrase) {
@@ -116,6 +116,21 @@ A small price sticker is visible on the case.
 ${cassetteRealism}`;
         break;
 
+      case "Eau de Toilet":
+        const perfumeRealism = "Shot on medium format film, Kodak Portra 400 pushed two stops. Slight grain, muted colors, the blacks are lifted.";
+        const scentMood = scentStyle ? `The mood is ${scentStyle}.` : "";
+        prompt = `An over-the-top luxury fragrance bottle still life with cinematic depth.
+A sculptural perfume bottle featuring "${phrase}" as the fragrance name, positioned in a rich environmental scene with foreground and background elements.
+The label is exquisite: embossed or etched lettering, elegant serif or custom typography, integrated into the bottle design.
+The bottle is the hero but exists within a layered, three-dimensional space - not flat studio photography.
+Shallow depth of field with the bottle in sharp focus.
+The imagery is pretentious and takes itself way too seriously.
+${scentMood}
+${vibe ? `Style direction: ${vibe}.` : ""}
+No advertising copy or text other than the fragrance name.
+${perfumeRealism}`;
+        break;
+
       default:
         const defaultRealism = "Vintage photograph with film grain and slightly faded colors.";
         prompt = `A close-up photo of a vintage object labeled "${phrase}".
@@ -144,7 +159,7 @@ ${defaultRealism}`;
           prompt: prompt,
           aspect_ratio: "1:1",
           style_type: "Realistic",
-          magic_prompt_option: "Off"
+          magic_prompt_option: "On"
         }
       });
       return Array.isArray(output) ? output[0] : String(output);
@@ -184,8 +199,8 @@ ${defaultRealism}`;
     // Log to database (non-blocking - don't fail the request if DB is unavailable)
     try {
       await sql`
-        INSERT INTO generations (ip_address, city, country, phrase, subtitle, media_type, vibe, movie_genre, flyer_style, image_url, replicate_url)
-        VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${cloudinaryUrl}, ${replicateUrl})
+        INSERT INTO generations (ip_address, city, country, phrase, subtitle, media_type, vibe, movie_genre, flyer_style, scent_style, image_url, replicate_url)
+        VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${scentStyle || null}, ${cloudinaryUrl}, ${replicateUrl})
       `;
     } catch (dbError) {
       console.error("Database logging failed:", dbError);

@@ -16,9 +16,15 @@ export async function GET() {
         vibe TEXT,
         movie_genre VARCHAR(50),
         flyer_style TEXT,
+        scent_style TEXT,
         image_url TEXT,
         replicate_url TEXT
       )
+    `;
+
+    // Add scent_style column if it doesn't exist (for existing tables)
+    await sql`
+      ALTER TABLE generations ADD COLUMN IF NOT EXISTS scent_style TEXT
     `;
 
     return NextResponse.json({ message: "Database initialized successfully" });
