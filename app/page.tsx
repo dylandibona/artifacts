@@ -299,7 +299,7 @@ export default function Home() {
               </div>
             )}
 
-            {/* Scent Style - Only shows for Eau de Toilet */}
+            {/* Scent Style - commented out for now, relying on phrase + vibe
             {mediaType === "Eau de Toilet" && (
               <div className="animate-in fade-in slide-in-from-top-2">
                 <label className="block text-sm font-semibold uppercase mb-2 tracking-wide" style={{ fontFamily: "var(--font-body)" }}>Scent Style</label>
@@ -324,7 +324,7 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            )}
+            )} */}
 
             {/* Vibe */}
             <div>

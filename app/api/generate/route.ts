@@ -117,18 +117,46 @@ ${cassetteRealism}`;
         break;
 
       case "Eau de Toilet":
-        const perfumeRealism = "Shot on medium format film, Kodak Portra 400 pushed two stops. Slight grain, muted colors, the blacks are lifted.";
-        const scentMood = scentStyle ? `The mood is ${scentStyle}.` : "";
-        prompt = `An over-the-top luxury fragrance bottle still life with cinematic depth.
-A sculptural perfume bottle featuring "${phrase}" as the fragrance name, positioned in a rich environmental scene with foreground and background elements.
-The label is exquisite: embossed or etched lettering, elegant serif or custom typography, integrated into the bottle design.
-The bottle is the hero but exists within a layered, three-dimensional space - not flat studio photography.
-Shallow depth of field with the bottle in sharp focus.
-The imagery is pretentious and takes itself way too seriously.
-${scentMood}
-${vibe ? `Style direction: ${vibe}.` : ""}
-No advertising copy or text other than the fragrance name.
-${perfumeRealism}`;
+        const scentVisuals: Record<string, string> = {
+          "seductive and sensual": "Warm low light, deep jewel tones, close intimate framing. Soft deep shadows. The image feels like it's about to whisper something.",
+          "fresh and clean": "Bright natural light, cool whites and pale aquas, clean minimal environment. Crisp morning air feel.",
+          "dark and mysterious": "Single dramatic light source cutting through near-total darkness. Deep cool shadows, smoke or mist, nothing fully revealed.",
+          "bold and powerful": "Hard directional light, high contrast, saturated color. Strong geometric composition. No apologies.",
+          "1970s American glamour": "Rugged, earthy, independent. Wide open spaces energy. Masculine without trying. The American West filtered through a cologne ad.",
+          "unhinged over-the-top luxury": "Baroque excess. Every surface is gilded or encrusted. Maximalist to the point of absurdity. Too much of everything, on purpose.",
+          "department store elegance": "Clean professional lighting on white or cream. Tasteful, safe, and a little boring in the best possible way. Nordstrom in 1991.",
+          "gas station bathroom chic": "A fragrance brand that desperately wants to be luxury but isn't quite pulling it off. The ambition is there. The execution is not. Available where fine truck stop gifts are sold.",
+          "old money sophistication": "Muted natural light filtering through heavy drapes. Aged wood, worn leather, nothing new. Understated to the point of arrogance.",
+          "flashy new money": "Everything is shiny. Oversaturated color, high gloss surfaces, chrome and mirror. The lighting is too much. The bottle is too much. Perfect.",
+          "coastal grandmother aesthetic": "Soft diffused light, linen textures, whitewashed surfaces. Sea glass color palette. A bottle you'd find on a windowsill next to a shells collection.",
+          "divorced dad energy": "Wood-paneled wall, beige carpet, a folding table. Maybe a can of something in the background. Shot like it's a Super Bowl ad anyway.",
+          "night out on the town": "Neon reflections, wet pavement bokeh, nighttime city glow. The bottle looks like it just got out of a cab.",
+          "the morning after": "Harsh cool daylight, rumpled surfaces, slightly disheveled environment. Beautiful and a little rough.",
+        };
+        const labelDesign = pickRandom([
+          `The label features "${phrase}" in tall elegant serif lettering, gold foil stamped on heavy cream paper with a fine border`,
+          `The fragrance name "${phrase}" etched directly into the glass in an exquisite custom script, catching light at the edges`,
+          `"${phrase}" appears in bold minimalist sans-serif, debossed into a matte lacquer panel on the bottle face`,
+          `The label is a small precious rectangle of black with "${phrase}" in raised gold lettering, bordered by a hairline rule`,
+          `"${phrase}" rendered in a dramatic high-contrast serif, silk-screened directly onto the glass in platinum ink`,
+          `A handsome typographic label: "${phrase}" set in stacked all-caps with generous letterspacing, printed on vellum`,
+          `The bottle carries "${phrase}" in an ornate Art Nouveau script, surrounded by fine decorative flourishes, embossed in gold`,
+          `"${phrase}" set in a single oversized word in clean modernist type, cut into frosted glass like a nameplate`
+        ]);
+        // scentStyle visual brief commented out — relying on phrase + vibe
+        // const visualBrief = scentStyle && scentVisuals[scentStyle] ? `${scentVisuals[scentStyle]}\n` : "";
+        prompt = vibe
+          ? `A cologne and perfume bottle advertisement shot with the visual energy of: ${vibe}.
+The bottle is a sculptural object — dramatic in shape, filled with richly colored liquid. It demands attention.
+${labelDesign}.
+Beautiful lighting, shallow depth of field, the bottle in sharp focus. Unapologetically pretentious. Takes itself deadly seriously.
+No advertising copy or text other than the fragrance name on the bottle.`
+          : `A luxury cologne and perfume bottle advertisement. Extravagant, over-the-top, and unapologetically pretentious.
+The bottle is a sculptural object — dramatic in shape, filled with richly colored liquid. It demands attention.
+${labelDesign}.
+Shot as a high-end fragrance campaign: fashion photography, beautiful lighting, shallow depth of field, the bottle in sharp focus.
+This takes itself deadly seriously.
+No advertising copy or text other than the fragrance name on the bottle.`;
         break;
 
       default:
