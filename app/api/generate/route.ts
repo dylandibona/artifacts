@@ -4,6 +4,10 @@ import OpenAI from "openai";
 import { v2 as cloudinary } from "cloudinary";
 import { sql } from "@vercel/postgres";
 
+// gpt-image-2 generations routinely take 30-60s; let the function run long
+// enough to finish without Vercel killing it mid-request.
+export const maxDuration = 300;
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -29,7 +33,13 @@ export async function POST(request: NextRequest) {
     const country = rawCountry ? decodeURIComponent(rawCountry) : null;
 
     const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
-    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+      // Pin requests to a specific OpenAI org if OPENAI_ORG_ID is set. Prevents
+      // requests from intermittently attributing to the user-default context,
+      // which bypasses org-level verification and trips 403s on gpt-image-*.
+      organization: process.env.OPENAI_ORG_ID,
+    });
 
     const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
