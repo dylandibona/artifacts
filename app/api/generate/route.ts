@@ -188,16 +188,26 @@ ${defaultRealism}`;
     };
 
     const runGptImage = async () => {
-      const result = await openai.images.generate({
-        model: "gpt-image-2",
-        prompt: prompt,
-        size: "1024x1024",
-        n: 1,
-      });
-      const first = result.data?.[0];
-      if (first?.b64_json) return `data:image/png;base64,${first.b64_json}`;
-      if (first?.url) return first.url;
-      throw new Error("gpt-image-2 returned no image data");
+      const startedAt = new Date().toISOString();
+      console.log(`[gpt-image-2 ${startedAt}] calling OpenAI images.generate`);
+      try {
+        const result = await openai.images.generate({
+          model: "gpt-image-2",
+          prompt: prompt,
+          size: "1024x1024",
+          n: 1,
+        });
+        const first = result.data?.[0];
+        if (first?.b64_json) return `data:image/png;base64,${first.b64_json}`;
+        if (first?.url) return first.url;
+        throw new Error("gpt-image-2 returned no image data");
+      } catch (err) {
+        const e = err as { code?: string; status?: number; message?: string; requestID?: string };
+        console.error(
+          `[gpt-image-2 ${startedAt}] FAIL code=${e?.code ?? "unknown"} status=${e?.status ?? "?"} reqID=${e?.requestID ?? "?"} message=${e?.message ?? ""}`,
+        );
+        throw err;
+      }
     };
 
     try {
