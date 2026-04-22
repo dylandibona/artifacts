@@ -358,10 +358,11 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => { setModelChoice("xi"); playClick(); }}
-                  className={`text-sm font-semibold uppercase tracking-wide transition-all hover:opacity-100 ${modelChoice === "xi" ? "opacity-100" : "opacity-40"}`}
+                  className={`text-sm font-semibold uppercase tracking-wide transition-all hover:opacity-100 flex flex-col items-center ${modelChoice === "xi" ? "opacity-100" : "opacity-40"}`}
                   style={{ fontFamily: "var(--font-mono)" }}
                 >
-                  Node Ξ
+                  <span>Node Ξ</span>
+                  <span className="text-[10px] font-normal normal-case tracking-normal opacity-70 mt-0.5">quick</span>
                 </button>
 
                 <div
@@ -388,10 +389,11 @@ export default function Home() {
                 <button
                   type="button"
                   onClick={() => { setModelChoice("null"); playClick(); }}
-                  className={`text-sm font-semibold uppercase tracking-wide transition-all hover:opacity-100 ${modelChoice === "null" ? "opacity-100" : "opacity-40"}`}
+                  className={`text-sm font-semibold uppercase tracking-wide transition-all hover:opacity-100 flex flex-col items-center ${modelChoice === "null" ? "opacity-100" : "opacity-40"}`}
                   style={{ fontFamily: "var(--font-mono)" }}
                 >
-                  Node ∅
+                  <span>Node ∅</span>
+                  <span className="text-[10px] font-normal normal-case tracking-normal opacity-70 mt-0.5">thoughtful</span>
                 </button>
               </div>
             </div>
@@ -403,7 +405,11 @@ export default function Home() {
               style={{ fontFamily: "var(--font-body)", fontWeight: 700, letterSpacing: "0.05em" }}
             >
               <span className="flex items-center justify-center gap-2">
-                {isLoading ? "Generating Artifact" : "Generate Artifact"}
+                {isLoading
+                  ? modelChoice === "null"
+                    ? "Generating… (~45s, hang tight)"
+                    : "Generating Artifact"
+                  : "Generate Artifact"}
                 {isLoading && (
                   <svg
                     className="animate-spin h-5 w-5"
