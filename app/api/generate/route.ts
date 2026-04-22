@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
 
     switch (mediaType) {
       case "Book":
-        const bookRealism = "Shot on expired Polaroid film, creamy faded colors, soft focus, warm yellow cast. Found photograph aesthetic from someone's personal collection.";
+        const bookRealism = "A spontaneous amateur phone photo taken today — clean digital sensor, natural indoor lighting, true colors, slight handheld tilt. Modern photography, not filtered or vintage-styled, no Polaroid frame, no film grain. The book itself is old and worn, but the photograph is fresh.";
         const bookSub = subtitle ? ` Subtitle: "${subtitle}"` : "";
         const bookLocation = pickRandom([
           "on a table at an estate sale",
@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
           "paperback book",
           "book with a dust jacket"
         ]);
-        prompt = `A close-up photo of a ${bookFormat} ${bookLocation}.
+        prompt = `An amateur handheld snapshot of a ${bookFormat} ${bookLocation}, casually framed, slightly tilted, surroundings visible.
 The book title "${phrase}" is on the cover.${bookSub}
 The cover design style is ${vibe}.
 The book is slightly worn and aged.
@@ -68,7 +68,7 @@ ${bookRealism}`;
         break;
 
       case "Vinyl Record":
-        const vinylRealism = "Shot on expired Polaroid film, soft focus, faded warm colors, slight chemical bloom and visible grain. An amateur snapshot from someone's record collection — not a magazine spread.";
+        const vinylRealism = "A spontaneous amateur phone photo taken today — clean digital sensor, natural indoor lighting, true colors, slight handheld tilt. Modern photography, not filtered or vintage-styled, no Polaroid frame, no film grain. The record sleeve itself is aged and worn, but the photograph is fresh.";
         const vinylLocation = pickRandom([
           "in a thrift store record bin, other records visible",
           "in a dusty crate at a record store, ring wear on sleeve",

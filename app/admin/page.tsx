@@ -1,4 +1,5 @@
 import { sql } from "@vercel/postgres";
+import { AdminFilters } from "./AdminFilters";
 
 // Force dynamic rendering - no caching
 export const dynamic = "force-dynamic";
@@ -49,8 +50,47 @@ interface Generation {
   model_used: string | null;
 }
 
-async function getGenerations(): Promise<Generation[]> {
+type Filters = {
+  mediaType: string;
+  location: string;
+};
+
+async function getGenerations(filters: Filters): Promise<Generation[]> {
+  const { mediaType, location } = filters;
   try {
+    if (mediaType && location) {
+      const { rows } = await sql<Generation>`
+        SELECT * FROM generations
+        WHERE media_type = ${mediaType}
+          AND (CASE
+                 WHEN city IS NOT NULL AND country IS NOT NULL THEN city || ', ' || country
+                 WHEN country IS NOT NULL THEN country
+                 WHEN city IS NOT NULL THEN city
+                 ELSE 'Unknown'
+               END) = ${location}
+        ORDER BY created_at DESC
+      `;
+      return rows;
+    }
+    if (mediaType) {
+      const { rows } = await sql<Generation>`
+        SELECT * FROM generations WHERE media_type = ${mediaType} ORDER BY created_at DESC
+      `;
+      return rows;
+    }
+    if (location) {
+      const { rows } = await sql<Generation>`
+        SELECT * FROM generations
+        WHERE (CASE
+                 WHEN city IS NOT NULL AND country IS NOT NULL THEN city || ', ' || country
+                 WHEN country IS NOT NULL THEN country
+                 WHEN city IS NOT NULL THEN city
+                 ELSE 'Unknown'
+               END) = ${location}
+        ORDER BY created_at DESC
+      `;
+      return rows;
+    }
     const { rows } = await sql<Generation>`
       SELECT * FROM generations ORDER BY created_at DESC
     `;
@@ -61,8 +101,47 @@ async function getGenerations(): Promise<Generation[]> {
   }
 }
 
-async function getModelBreakdown(): Promise<{ model: string; count: number }[]> {
+async function getModelBreakdown(filters: Filters): Promise<{ model: string; count: number }[]> {
+  const { mediaType, location } = filters;
   try {
+    if (mediaType && location) {
+      const { rows } = await sql<{ model: string; count: string }>`
+        SELECT COALESCE(model_used, 'unknown') as model, COUNT(*)::text as count
+        FROM generations
+        WHERE media_type = ${mediaType}
+          AND (CASE
+                 WHEN city IS NOT NULL AND country IS NOT NULL THEN city || ', ' || country
+                 WHEN country IS NOT NULL THEN country
+                 WHEN city IS NOT NULL THEN city
+                 ELSE 'Unknown'
+               END) = ${location}
+        GROUP BY COALESCE(model_used, 'unknown')
+      `;
+      return rows.map((r) => ({ model: r.model, count: Number(r.count) }));
+    }
+    if (mediaType) {
+      const { rows } = await sql<{ model: string; count: string }>`
+        SELECT COALESCE(model_used, 'unknown') as model, COUNT(*)::text as count
+        FROM generations
+        WHERE media_type = ${mediaType}
+        GROUP BY COALESCE(model_used, 'unknown')
+      `;
+      return rows.map((r) => ({ model: r.model, count: Number(r.count) }));
+    }
+    if (location) {
+      const { rows } = await sql<{ model: string; count: string }>`
+        SELECT COALESCE(model_used, 'unknown') as model, COUNT(*)::text as count
+        FROM generations
+        WHERE (CASE
+                 WHEN city IS NOT NULL AND country IS NOT NULL THEN city || ', ' || country
+                 WHEN country IS NOT NULL THEN country
+                 WHEN city IS NOT NULL THEN city
+                 ELSE 'Unknown'
+               END) = ${location}
+        GROUP BY COALESCE(model_used, 'unknown')
+      `;
+      return rows.map((r) => ({ model: r.model, count: Number(r.count) }));
+    }
     const { rows } = await sql<{ model: string; count: string }>`
       SELECT COALESCE(model_used, 'unknown') as model, COUNT(*)::text as count
       FROM generations
@@ -73,6 +152,40 @@ async function getModelBreakdown(): Promise<{ model: string; count: number }[]> 
     // Fallback when the model_used column doesn't exist yet — bucket everything as unknown
     console.error("Model breakdown failed, falling back to total count:", error);
     try {
+      if (mediaType && location) {
+        const { rows } = await sql<{ count: string }>`
+          SELECT COUNT(*)::text as count FROM generations
+          WHERE media_type = ${mediaType}
+            AND (CASE
+                   WHEN city IS NOT NULL AND country IS NOT NULL THEN city || ', ' || country
+                   WHEN country IS NOT NULL THEN country
+                   WHEN city IS NOT NULL THEN city
+                   ELSE 'Unknown'
+                 END) = ${location}
+        `;
+        const total = Number(rows[0]?.count || 0);
+        return total > 0 ? [{ model: "unknown", count: total }] : [];
+      }
+      if (mediaType) {
+        const { rows } = await sql<{ count: string }>`
+          SELECT COUNT(*)::text as count FROM generations WHERE media_type = ${mediaType}
+        `;
+        const total = Number(rows[0]?.count || 0);
+        return total > 0 ? [{ model: "unknown", count: total }] : [];
+      }
+      if (location) {
+        const { rows } = await sql<{ count: string }>`
+          SELECT COUNT(*)::text as count FROM generations
+          WHERE (CASE
+                   WHEN city IS NOT NULL AND country IS NOT NULL THEN city || ', ' || country
+                   WHEN country IS NOT NULL THEN country
+                   WHEN city IS NOT NULL THEN city
+                   ELSE 'Unknown'
+                 END) = ${location}
+        `;
+        const total = Number(rows[0]?.count || 0);
+        return total > 0 ? [{ model: "unknown", count: total }] : [];
+      }
       const { rows } = await sql<{ count: string }>`SELECT COUNT(*)::text as count FROM generations`;
       const total = Number(rows[0]?.count || 0);
       return total > 0 ? [{ model: "unknown", count: total }] : [];
@@ -83,10 +196,56 @@ async function getModelBreakdown(): Promise<{ model: string; count: number }[]> 
   }
 }
 
-export default async function AdminPage() {
-  const [generations, breakdown] = await Promise.all([
-    getGenerations(),
-    getModelBreakdown(),
+async function getDistinctMediaTypes(): Promise<string[]> {
+  try {
+    const { rows } = await sql<{ media_type: string }>`
+      SELECT DISTINCT media_type FROM generations
+      WHERE media_type IS NOT NULL
+      ORDER BY media_type
+    `;
+    return rows.map((r) => r.media_type);
+  } catch (error) {
+    console.error("Failed to fetch distinct media types:", error);
+    return [];
+  }
+}
+
+async function getDistinctLocations(): Promise<string[]> {
+  try {
+    const { rows } = await sql<{ location: string }>`
+      SELECT DISTINCT (CASE
+        WHEN city IS NOT NULL AND country IS NOT NULL THEN city || ', ' || country
+        WHEN country IS NOT NULL THEN country
+        WHEN city IS NOT NULL THEN city
+        ELSE 'Unknown'
+      END) as location
+      FROM generations
+      ORDER BY location
+    `;
+    return rows.map((r) => r.location);
+  } catch (error) {
+    console.error("Failed to fetch distinct locations:", error);
+    return [];
+  }
+}
+
+export default async function AdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ mediaType?: string; location?: string }>;
+}) {
+  const params = await searchParams;
+  const filters: Filters = {
+    mediaType: params.mediaType ?? "",
+    location: params.location ?? "",
+  };
+  const hasFilter = !!(filters.mediaType || filters.location);
+
+  const [generations, breakdown, mediaTypes, locations] = await Promise.all([
+    getGenerations(filters),
+    getModelBreakdown(filters),
+    getDistinctMediaTypes(),
+    getDistinctLocations(),
   ]);
 
   const totalCount = breakdown.reduce((sum, b) => sum + b.count, 0);
@@ -101,17 +260,33 @@ export default async function AdminPage() {
         {/* Header */}
         <header className="mb-10">
           <h1 className="text-4xl font-bold text-[#cc5500] mb-2">Artifacts Admin</h1>
-          <p className="text-[#888]">Usage tracking and image archive</p>
+          <p className="text-[#888]">
+            Usage tracking and image archive
+            {hasFilter && (
+              <span className="ml-2 text-[#cc5500]">
+                · filtered by
+                {filters.mediaType && ` ${filters.mediaType}`}
+                {filters.mediaType && filters.location && " in"}
+                {filters.location && ` ${filters.location}`}
+              </span>
+            )}
+          </p>
         </header>
+
+        <AdminFilters mediaTypes={mediaTypes} locations={locations} />
 
         {/* Top-line stats */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
           <div className="bg-[#252542] rounded-lg p-6 border border-[#3d3d5c]">
-            <p className="text-sm text-[#888] uppercase tracking-wide mb-1">Total Artifacts</p>
+            <p className="text-sm text-[#888] uppercase tracking-wide mb-1">
+              {hasFilter ? "Matching Artifacts" : "Total Artifacts"}
+            </p>
             <p className="text-4xl font-bold text-white">{totalCount}</p>
           </div>
           <div className="bg-[#252542] rounded-lg p-6 border border-[#3d3d5c]">
-            <p className="text-sm text-[#888] uppercase tracking-wide mb-1">Estimated Spend</p>
+            <p className="text-sm text-[#888] uppercase tracking-wide mb-1">
+              {hasFilter ? "Matching Spend" : "Estimated Spend"}
+            </p>
             <p className="text-4xl font-bold text-white">${totalSpend.toFixed(2)}</p>
             <p className="text-xs text-[#666] mt-1">Summed across models — see breakdown below</p>
           </div>
@@ -121,7 +296,9 @@ export default async function AdminPage() {
         <div className="bg-[#252542] rounded-lg p-6 border border-[#3d3d5c] mb-6">
           <p className="text-sm text-[#888] uppercase tracking-wide mb-4">By Model</p>
           {breakdown.length === 0 ? (
-            <p className="text-[#666] text-sm">No generations yet.</p>
+            <p className="text-[#666] text-sm">
+              {hasFilter ? "No artifacts match these filters." : "No generations yet."}
+            </p>
           ) : (
             <div className="space-y-3">
               {breakdown
@@ -183,11 +360,15 @@ export default async function AdminPage() {
         {/* Generations Grid */}
         {generations.length === 0 ? (
           <div className="bg-[#252542] rounded-lg p-10 border border-[#3d3d5c] text-center">
-            <p className="text-[#888]">No artifacts generated yet.</p>
-            <p className="text-sm text-[#666] mt-2">
-              Make sure the database is initialized at{" "}
-              <code className="bg-[#1a1a2e] px-2 py-1 rounded">/api/admin/init-db</code>
+            <p className="text-[#888]">
+              {hasFilter ? "No artifacts match these filters." : "No artifacts generated yet."}
             </p>
+            {!hasFilter && (
+              <p className="text-sm text-[#666] mt-2">
+                Make sure the database is initialized at{" "}
+                <code className="bg-[#1a1a2e] px-2 py-1 rounded">/api/admin/init-db</code>
+              </p>
+            )}
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
