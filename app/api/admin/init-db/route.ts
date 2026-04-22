@@ -27,6 +27,11 @@ export async function GET() {
       ALTER TABLE generations ADD COLUMN IF NOT EXISTS scent_style TEXT
     `;
 
+    // Track which image model produced each row (e.g. recraft-v4, gpt-image-2)
+    await sql`
+      ALTER TABLE generations ADD COLUMN IF NOT EXISTS model_used VARCHAR(50)
+    `;
+
     return NextResponse.json({ message: "Database initialized successfully" });
   } catch (error) {
     console.error("Database init error:", error);

@@ -58,13 +58,13 @@ ${bookRealism}`;
         break;
 
       case "Vinyl Record":
-        const vinylRealism = "Shot on Kodachrome 64, warm saturated colors, slight yellow cast from aged slide film. Looks like a photo from a 1970s magazine.";
+        const vinylRealism = "Shot on expired Polaroid film, soft focus, faded warm colors, slight chemical bloom and visible grain. An amateur snapshot from someone's record collection — not a magazine spread.";
         const vinylLocation = pickRandom([
           "in a thrift store record bin, other records visible",
           "in a dusty crate at a record store, ring wear on sleeve",
-          "on the floor near a turntable, rolling papers nearby"
+          "on the shag carpet of a hippie's living room beside a turntable, rolling papers, a full ashtray, and a half-rolled joint scattered nearby"
         ]);
-        prompt = `A close-up photo of a vinyl record sleeve ${vinylLocation}.
+        prompt = `A handheld snapshot of a vinyl record sleeve ${vinylLocation}, casually framed, slightly tilted, surroundings visible.
 The album title "${phrase}" is on the cover.
 The cover art style is ${vibe}.
 The sleeve has ring wear and soft creased corners.
@@ -72,15 +72,16 @@ ${vinylRealism}`;
         break;
 
       case "Gig Flyer":
-        const flyerRealism = "Shot on Ilford HP5 pushed to 1600, high contrast black and white, harsh flash, gritty street photography aesthetic.";
+        const flyerRealism = "Shot on expired 35mm color film, harsh flash, high contrast, gritty street photography aesthetic.";
         const flyerLocation = pickRandom([
-          "stapled to a telephone pole at night, shot with flash",
-          "wheat-pasted on a crumbling brick wall",
-          "pinned to a cluttered coffee shop bulletin board"
+          "wheat-pasted at eye level on a crumbling brick wall among other weathered and torn flyers, layers of ripped paper showing decades of past shows underneath",
+          "stapled to a telephone pole at night under a streetlamp, dozens of rusty staples and paper scraps from old flyers crusting the wood, a crumpled beer can at the base",
+          "thumbtacked to a cluttered coffee shop bulletin board overlapping with missing-cat posters, roommate-wanted ads, zine announcements, and indie band stickers",
+          "taped inside the front window of an independent record store next to faded past-show posters and a neon OPEN sign"
         ]);
         const styleToUse = flyerStyle || vibe || "bold graphic design";
-        prompt = `A photograph of a concert flyer ${flyerLocation}.
-The poster announces the band "${phrase}" in prominent lettering.
+        prompt = `A photograph of a letter-sized concert flyer (roughly 8.5×11 inches, paper-sized) ${flyerLocation}.
+The flyer announces the band "${phrase}" in prominent lettering.
 Poster design style: ${styleToUse}.
 The paper is weathered with torn edges and visible wear.
 ${flyerRealism}`;
@@ -89,12 +90,12 @@ ${flyerRealism}`;
       case "VHS Tape":
         const vhsRealism = "Shot with on-camera flash, harsh shadows, red-eye era snapshot from 1988. Fujifilm drugstore print with rounded corners.";
         const vhsLocation = pickRandom([
-          "in a thrift store bin with other tapes",
-          "on a dusty shelf at a video rental store",
-          "in a cardboard box at a garage sale",
+          "stacked among other VHS tapes in a thrift store bin",
+          "on a crowded video rental shelf, other VHS spines visible",
+          "in a \"$1 VHS\" cardboard box at a garage sale, other cassettes visible",
           "on a cluttered coffee table"
         ]);
-        prompt = `A close-up photo of a VHS tape in its cardboard sleeve ${vhsLocation}.
+        prompt = `A close-up snapshot of a rectangular VHS cardboard slipcase (paperback-sized, portrait orientation) ${vhsLocation}.
 The movie title "${phrase}" is on the cover.
 The cover art depicts an over-the-top ${movieGenre} with dramatic poses.
 The cover art style is ${vibe}.
@@ -230,8 +231,8 @@ ${defaultRealism}`;
     // Log to database (non-blocking - don't fail the request if DB is unavailable)
     try {
       await sql`
-        INSERT INTO generations (ip_address, city, country, phrase, subtitle, media_type, vibe, movie_genre, flyer_style, scent_style, image_url, replicate_url)
-        VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${scentStyle || null}, ${cloudinaryUrl}, ${replicateUrl})
+        INSERT INTO generations (ip_address, city, country, phrase, subtitle, media_type, vibe, movie_genre, flyer_style, scent_style, image_url, replicate_url, model_used)
+        VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${scentStyle || null}, ${cloudinaryUrl}, ${replicateUrl}, ${modelUsed})
       `;
     } catch (dbError) {
       console.error("Database logging failed:", dbError);
