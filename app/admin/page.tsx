@@ -70,8 +70,16 @@ async function getModelBreakdown(): Promise<{ model: string; count: number }[]> 
     `;
     return rows.map((r) => ({ model: r.model, count: Number(r.count) }));
   } catch (error) {
-    console.error("Failed to fetch model breakdown:", error);
-    return [];
+    // Fallback when the model_used column doesn't exist yet — bucket everything as unknown
+    console.error("Model breakdown failed, falling back to total count:", error);
+    try {
+      const { rows } = await sql<{ count: string }>`SELECT COUNT(*)::text as count FROM generations`;
+      const total = Number(rows[0]?.count || 0);
+      return total > 0 ? [{ model: "unknown", count: total }] : [];
+    } catch (fallbackError) {
+      console.error("Fallback count also failed:", fallbackError);
+      return [];
+    }
   }
 }
 

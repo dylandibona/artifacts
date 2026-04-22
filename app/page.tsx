@@ -233,15 +233,17 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Subtitle - Only shows for Book */}
-            {mediaType === "Book" && (
+            {/* Subtitle - shows for Book and Eau de Toilet */}
+            {(mediaType === "Book" || mediaType === "Eau de Toilet") && (
               <div className="animate-in fade-in slide-in-from-top-2">
-                <label className="block text-sm font-semibold uppercase mb-2 tracking-wide" style={{ fontFamily: "var(--font-body)" }}>Subtitle (Optional)</label>
+                <label className="block text-sm font-semibold uppercase mb-2 tracking-wide" style={{ fontFamily: "var(--font-body)" }}>
+                  {mediaType === "Eau de Toilet" ? "Tagline (Optional)" : "Subtitle (Optional)"}
+                </label>
                 <input
                   type="text"
                   value={subtitle}
                   onChange={(e) => setSubtitle(e.target.value)}
-                  placeholder="Optional subtitle or tagline"
+                  placeholder={mediaType === "Eau de Toilet" ? "Tagline for the bottle label" : "Optional subtitle or tagline"}
                   className="w-full bg-[#f4f1de] border-2 border-[#3d405b] p-3 text-lg rounded focus:outline-none focus:border-[#cc5500]"
                   style={{ fontFamily: "var(--font-mono)", fontWeight: 400 }}
                 />

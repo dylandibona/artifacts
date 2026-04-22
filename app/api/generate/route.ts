@@ -148,18 +148,21 @@ ${cassetteRealism}`;
         ]);
         // scentStyle visual brief commented out — relying on phrase + vibe
         // const visualBrief = scentStyle && scentVisuals[scentStyle] ? `${scentVisuals[scentStyle]}\n` : "";
+        const bottleTagline = subtitle ? ` Beneath the fragrance name, a smaller refined tagline reads "${subtitle}".` : "";
         prompt = vibe
-          ? `A cologne and perfume bottle advertisement shot with the visual energy of: ${vibe}.
-The bottle is a sculptural object — dramatic in shape, filled with richly colored liquid. It demands attention.
-${labelDesign}.
-Beautiful lighting, shallow depth of field, the bottle in sharp focus. Unapologetically pretentious. Takes itself deadly seriously.
-No advertising copy or text other than the fragrance name on the bottle.`
-          : `A luxury cologne and perfume bottle advertisement. Extravagant, over-the-top, and unapologetically pretentious.
-The bottle is a sculptural object — dramatic in shape, filled with richly colored liquid. It demands attention.
-${labelDesign}.
-Shot as a high-end fragrance campaign: fashion photography, beautiful lighting, shallow depth of field, the bottle in sharp focus.
-This takes itself deadly seriously.
-No advertising copy or text other than the fragrance name on the bottle.`;
+          ? `A full-page luxury fragrance campaign — the kind of pretentious high-end ad you'd find in the opening pages of a glossy fashion magazine. Over-the-top, unapologetically pretentious, takes itself deadly seriously.
+Scene and visual energy: ${vibe}. The surrounding environment, props, and atmosphere should fit this vibe.
+The bottle is a sculptural object — dramatic in shape, filled with richly colored liquid, styled like a real luxury fragrance.
+${labelDesign}.${bottleTagline}
+Beautiful editorial lighting, shallow depth of field, cinematic contrast, bottle in sharp focus.
+CRITICAL: treat the fragrance name as a brand word only — do NOT illustrate the name itself literally. No foods, plants, animals, or objects that depict or represent what the name says.
+No text anywhere except the fragrance name${subtitle ? " and tagline" : ""} on the bottle.`
+          : `A full-page luxury fragrance campaign — the kind of pretentious high-end ad you'd find in the opening pages of a glossy fashion magazine. Extravagant, over-the-top, unapologetically pretentious.
+The bottle is a sculptural object — dramatic in shape, filled with richly colored liquid, styled like a real luxury fragrance.
+${labelDesign}.${bottleTagline}
+Beautiful editorial lighting, shallow depth of field, cinematic contrast, bottle in sharp focus.
+CRITICAL: treat the fragrance name as a brand word only — do NOT illustrate the name itself literally. No foods, plants, animals, or objects that depict or represent what the name says.
+No text anywhere except the fragrance name${subtitle ? " and tagline" : ""} on the bottle.`;
         break;
 
       default:
@@ -228,14 +231,24 @@ ${defaultRealism}`;
       console.error("Cloudinary upload failed, using Replicate URL:", uploadError);
     }
 
-    // Log to database (non-blocking - don't fail the request if DB is unavailable)
+    // Log to database (non-blocking - don't fail the request if DB is unavailable).
+    // Tries with model_used first; falls back to a legacy INSERT without it so
+    // logging keeps working if the schema migration hasn't been run yet.
     try {
       await sql`
         INSERT INTO generations (ip_address, city, country, phrase, subtitle, media_type, vibe, movie_genre, flyer_style, scent_style, image_url, replicate_url, model_used)
         VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${scentStyle || null}, ${cloudinaryUrl}, ${replicateUrl}, ${modelUsed})
       `;
     } catch (dbError) {
-      console.error("Database logging failed:", dbError);
+      console.error("Primary INSERT failed, retrying without model_used:", dbError);
+      try {
+        await sql`
+          INSERT INTO generations (ip_address, city, country, phrase, subtitle, media_type, vibe, movie_genre, flyer_style, scent_style, image_url, replicate_url)
+          VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${scentStyle || null}, ${cloudinaryUrl}, ${replicateUrl})
+        `;
+      } catch (fallbackError) {
+        console.error("Fallback INSERT also failed:", fallbackError);
+      }
     }
 
     return NextResponse.json({ url: cloudinaryUrl });
