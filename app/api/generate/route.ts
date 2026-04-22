@@ -210,21 +210,13 @@ ${defaultRealism}`;
       }
     };
 
-    try {
-      if (modelChoice === "xi") {
-        replicateUrl = await runRecraft();
-      } else {
-        replicateUrl = await runGptImage();
-      }
-    } catch (primaryError) {
-      console.error(`${modelUsed} failed, falling back to other model:`, primaryError);
-      // Fallback to the other model
-      modelUsed = modelChoice === "xi" ? "gpt-image-2" : "recraft-v4";
-      if (modelChoice === "xi") {
-        replicateUrl = await runGptImage();
-      } else {
-        replicateUrl = await runRecraft();
-      }
+    // No cross-provider fallback — if the user picked Node Ξ they want Recraft V4,
+    // if they picked Node ∅ they want gpt-image-2. Errors surface so upstream
+    // issues (billing, outages, rate limits) are visible instead of masked.
+    if (modelChoice === "xi") {
+      replicateUrl = await runRecraft();
+    } else {
+      replicateUrl = await runGptImage();
     }
 
     console.log(`Image generated with ${modelUsed}`);
