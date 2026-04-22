@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import Replicate from "replicate";
+import OpenAI from "openai";
 import { v2 as cloudinary } from "cloudinary";
 import { sql } from "@vercel/postgres";
 
@@ -28,6 +29,7 @@ export async function POST(request: NextRequest) {
     const country = rawCountry ? decodeURIComponent(rawCountry) : null;
 
     const replicate = new Replicate({ auth: process.env.REPLICATE_API_TOKEN });
+    const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
     const pickRandom = (arr: string[]) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -166,10 +168,10 @@ The design style is ${vibe}.
 ${defaultRealism}`;
     }
 
-    // Generate image with Replicate based on user's model choice
-    // "xi" (Node Ξ) = Recraft V4, "null" (Node ∅) = Ideogram V3
+    // Generate image based on user's model choice
+    // "xi" (Node Ξ) = Recraft V4 via Replicate, "null" (Node ∅) = gpt-image-2 via OpenAI
     let replicateUrl: string;
-    let modelUsed = modelChoice === "xi" ? "recraft-v4" : "ideogram-v3";
+    let modelUsed = modelChoice === "xi" ? "recraft-v4" : "gpt-image-2";
 
     const runRecraft = async () => {
       const output = await replicate.run("recraft-ai/recraft-v4", {
@@ -181,30 +183,31 @@ ${defaultRealism}`;
       return Array.isArray(output) ? output[0] : String(output);
     };
 
-    const runIdeogram = async () => {
-      const output = await replicate.run("ideogram-ai/ideogram-v3-quality", {
-        input: {
-          prompt: prompt,
-          aspect_ratio: "1:1",
-          style_type: "Realistic",
-          magic_prompt_option: "On"
-        }
+    const runGptImage = async () => {
+      const result = await openai.images.generate({
+        model: "gpt-image-2",
+        prompt: prompt,
+        size: "1024x1024",
+        n: 1,
       });
-      return Array.isArray(output) ? output[0] : String(output);
+      const first = result.data?.[0];
+      if (first?.b64_json) return `data:image/png;base64,${first.b64_json}`;
+      if (first?.url) return first.url;
+      throw new Error("gpt-image-2 returned no image data");
     };
 
     try {
       if (modelChoice === "xi") {
         replicateUrl = await runRecraft();
       } else {
-        replicateUrl = await runIdeogram();
+        replicateUrl = await runGptImage();
       }
     } catch (primaryError) {
       console.error(`${modelUsed} failed, falling back to other model:`, primaryError);
       // Fallback to the other model
-      modelUsed = modelChoice === "xi" ? "ideogram-v3" : "recraft-v4";
+      modelUsed = modelChoice === "xi" ? "gpt-image-2" : "recraft-v4";
       if (modelChoice === "xi") {
-        replicateUrl = await runIdeogram();
+        replicateUrl = await runGptImage();
       } else {
         replicateUrl = await runRecraft();
       }
