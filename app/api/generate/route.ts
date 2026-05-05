@@ -178,6 +178,48 @@ CRITICAL: treat the fragrance name as a brand word only — do NOT illustrate th
 No text anywhere except the fragrance name${subtitle ? " and tagline" : ""} on the bottle.`;
         break;
 
+      case "Pub Sign": {
+        const pubBuilding = pickRandom([
+          "honey-colored Cotswold stone with a slate roof and a sturdy chimney stack",
+          "whitewashed stone with exposed black timber framing and a low slate roof",
+          "weathered red brick with thick ivy climbing the facade and a clay tile roof",
+        ]);
+        const pubSignColor = pickRandom([
+          "dark green",
+          "deep burgundy",
+          "navy blue",
+          "dark walnut brown",
+        ]);
+        const pubSignMount = pickRandom([
+          "hanging from a black wrought iron bracket mounted to the building facade",
+          "on a freestanding black painted post near the entrance",
+        ]);
+
+        // Use a fast LLM call to translate the pub name into a painted illustration
+        // description before building the image prompt. This is what makes the
+        // literal-pun reliability of the format work (Option B from the spec).
+        let pubIllustration = `a traditional oil-painted illustration representing ${phrase}`;
+        try {
+          const illustResult = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            max_tokens: 60,
+            messages: [
+              {
+                role: "system",
+                content: "You write illustration descriptions for traditional English pub signs. Given a pub name, return ONLY a concise description (under 25 words) of the central painted illustration in the classic British pub sign tradition. Be literal or punny. Specify a simple background color or heraldic shield shape. No preamble, no name prefix, just the description.",
+              },
+              { role: "user", content: phrase },
+            ],
+          });
+          pubIllustration = illustResult.choices[0]?.message?.content?.trim() || pubIllustration;
+        } catch {
+          // fall through to default illustration description
+        }
+
+        prompt = `A photorealistic tourist snapshot of a quintessential English country pub in a picturesque village, photographed on a sunny afternoon. The pub is built from ${pubBuilding}, with slightly wonky mullioned windows, hanging flower baskets overflowing with petunias and geraniums, climbing roses on the facade, and a heavy wooden door painted dark green or black. A traditional pub sign is ${pubSignMount}, prominently visible in the frame. The sign is a rectangular painted wooden panel displaying the name "${phrase}" in classic English signwriting — gold leaf serif lettering with a subtle shadow on a ${pubSignColor} background. The sign features a central oil-painted illustration in the traditional British pub sign style: ${pubIllustration}. Illustration style: folk-art heraldic, slightly naive, rich saturated colors, dark outlines around the main subject, visible brushwork, simple background. The sign has a slight weathered patina but is clean and well-maintained. The pub name on the sign must be clearly legible. Outside: a small hand-lettered chalkboard listing the day's specials, cobblestone or stone-flag walkway, a wooden bench near the door. The pub fills most of the frame but a glimpse of a stone lane and cottage wall adds village context. Soft natural daylight, blue sky with scattered clouds, late-morning to mid-afternoon sun, soft shadows. Shot on a phone or compact digital camera with slight handheld feel. Candid tourist snapshot framing, slightly amateur composition. Photorealistic, highly detailed.`;
+        break;
+      }
+
       default:
         const defaultRealism = "Vintage photograph with film grain and slightly faded colors.";
         prompt = `A close-up photo of a vintage object labeled "${phrase}".

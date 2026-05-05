@@ -242,11 +242,11 @@ export default function Home() {
             
             {/* Phrase */}
             <div>
-              <label className="block text-xl font-semibold uppercase mb-2 tracking-wide" style={{ fontFamily: "var(--font-body)" }}>The Title</label>
+              <label className="block text-xl font-semibold uppercase mb-2 tracking-wide" style={{ fontFamily: "var(--font-body)" }}>{mediaType === "Pub Sign" ? "The Pub Name" : "The Title"}</label>
               <textarea
                 value={phrase}
                 onChange={(e) => setPhrase(e.target.value)}
-                placeholder="What is it called?"
+                placeholder={mediaType === "Pub Sign" ? "e.g. The Crown & Anchor" : "What is it called?"}
                 rows={2}
                 className="w-full bg-[#f4f1de] border-2 border-[#3d405b] p-4 text-2xl focus:outline-none focus:ring-4 ring-[#cc5500] rounded-lg resize-none"
                 style={{ fontFamily: "var(--font-body)", fontWeight: 600, letterSpacing: "0.01em" }}
@@ -270,6 +270,7 @@ export default function Home() {
                   <option value="VHS Tape">VHS Tape</option>
                   <option value="Cassette Tape">Cassette Tape</option>
                   <option value="Eau de Toilet">Eau de Toilet</option>
+                  <option value="Pub Sign">Pub Sign</option>
                 </select>
                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[#3d405b]">
                   <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
@@ -374,8 +375,8 @@ export default function Home() {
               </div>
             )} */}
 
-            {/* Vibe */}
-            <div>
+            {/* Vibe — hidden for Pub Sign, which has a locked aesthetic */}
+            {mediaType !== "Pub Sign" && <div>
               <label className="block font-semibold uppercase mb-2 text-sm tracking-wide" style={{ fontFamily: "var(--font-body)" }}>The Vibe</label>
               <div className="flex gap-2">
                 <input
@@ -396,7 +397,7 @@ export default function Home() {
                   <span className="text-xl">🎲</span>
                 </button>
               </div>
-            </div>
+            </div>}
 
             {/* Model Choice Toggle */}
             <div className="flex flex-col items-center gap-3 pt-2">
