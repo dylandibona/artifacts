@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import Replicate from "replicate";
 import OpenAI from "openai";
 import { v2 as cloudinary } from "cloudinary";
@@ -15,8 +15,11 @@ cloudinary.config({
 });
 
 export async function POST(request: NextRequest) {
+  let jobId: string | undefined;
   try {
-    const { phrase, subtitle, mediaType, vibe: rawVibe, movieGenre, flyerStyle, scentStyle, modelChoice } = await request.json();
+    const body = await request.json();
+    jobId = body.jobId;
+    const { phrase, subtitle, mediaType, vibe: rawVibe, movieGenre, flyerStyle, scentStyle, modelChoice } = body;
     const vibe = rawVibe ? rawVibe.replace(/,\s*/g, " and ") : "";
 
     if (!phrase) {
@@ -182,6 +185,13 @@ The design style is ${vibe}.
 ${defaultRealism}`;
     }
 
+    // Register the job as pending so the client can poll for it
+    if (jobId) {
+      try {
+        await sql`INSERT INTO jobs (id, status) VALUES (${jobId}, 'pending') ON CONFLICT (id) DO NOTHING`;
+      } catch { /* non-fatal */ }
+    }
+
     // Generate image based on user's model choice
     // "xi" (Node Ξ) = Recraft V4 via Replicate, "null" (Node ∅) = gpt-image-2 via OpenAI
     let replicateUrl: string;
@@ -224,51 +234,109 @@ ${defaultRealism}`;
     // if they picked Node ∅ they want gpt-image-2. Errors surface so upstream
     // issues (billing, outages, rate limits) are visible instead of masked.
     if (modelChoice === "xi") {
+      // --- Recraft: synchronous ---
+      // Replicate URLs are temporary, so we must upload to Cloudinary before responding.
       replicateUrl = await runRecraft();
-    } else {
-      replicateUrl = await runGptImage();
-    }
+      console.log(`Image generated with ${modelUsed}`);
 
-    console.log(`Image generated with ${modelUsed}`);
+      let cloudinaryUrl = replicateUrl;
+      try {
+        const uploadResult = await cloudinary.uploader.upload(replicateUrl, {
+          folder: "artifacts",
+          resource_type: "image",
+        });
+        cloudinaryUrl = uploadResult.secure_url;
+      } catch (uploadError) {
+        console.error("Cloudinary upload failed, using Replicate URL:", uploadError);
+      }
 
-    // Upload to Cloudinary for permanent storage
-    let cloudinaryUrl = replicateUrl; // fallback to replicate URL if upload fails
-    try {
-      const uploadResult = await cloudinary.uploader.upload(replicateUrl, {
-        folder: "artifacts",
-        resource_type: "image",
-      });
-      cloudinaryUrl = uploadResult.secure_url;
-    } catch (uploadError) {
-      console.error("Cloudinary upload failed, using Replicate URL:", uploadError);
-    }
-
-    // Log to database (non-blocking - don't fail the request if DB is unavailable).
-    // Tries with model_used first; falls back to a legacy INSERT without it so
-    // logging keeps working if the schema migration hasn't been run yet.
-    try {
-      await sql`
-        INSERT INTO generations (ip_address, city, country, phrase, subtitle, media_type, vibe, movie_genre, flyer_style, scent_style, image_url, replicate_url, model_used)
-        VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${scentStyle || null}, ${cloudinaryUrl}, ${replicateUrl}, ${modelUsed})
-      `;
-    } catch (dbError) {
-      console.error("Primary INSERT failed, retrying without model_used:", dbError);
       try {
         await sql`
-          INSERT INTO generations (ip_address, city, country, phrase, subtitle, media_type, vibe, movie_genre, flyer_style, scent_style, image_url, replicate_url)
-          VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${scentStyle || null}, ${cloudinaryUrl}, ${replicateUrl})
+          INSERT INTO generations (ip_address, city, country, phrase, subtitle, media_type, vibe, movie_genre, flyer_style, scent_style, image_url, replicate_url, model_used)
+          VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${scentStyle || null}, ${cloudinaryUrl}, ${replicateUrl}, ${modelUsed})
         `;
-      } catch (fallbackError) {
-        console.error("Fallback INSERT also failed:", fallbackError);
+      } catch (dbError) {
+        console.error("Primary INSERT failed, retrying without model_used:", dbError);
+        try {
+          await sql`
+            INSERT INTO generations (ip_address, city, country, phrase, subtitle, media_type, vibe, movie_genre, flyer_style, scent_style, image_url, replicate_url)
+            VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${scentStyle || null}, ${cloudinaryUrl}, ${replicateUrl})
+          `;
+        } catch (fallbackError) {
+          console.error("Fallback INSERT also failed:", fallbackError);
+        }
       }
-    }
 
-    return NextResponse.json({ url: cloudinaryUrl });
+      if (jobId) {
+        try {
+          await sql`UPDATE jobs SET status = 'done', result_url = ${cloudinaryUrl} WHERE id = ${jobId}`;
+        } catch { /* non-fatal */ }
+      }
+
+      return NextResponse.json({ url: cloudinaryUrl });
+
+    } else {
+      // --- gpt-image-2: respond immediately, upload in background ---
+      // The model already returns b64_json in memory — no need to wait for Cloudinary
+      // before the client can display it. We ship the data URL right away and let
+      // after() handle the Cloudinary upload + DB logging + job status update.
+      const dataUrl = await runGptImage();
+      console.log(`Image generated with ${modelUsed}`);
+
+      after(async () => {
+        try {
+          const uploadResult = await cloudinary.uploader.upload(dataUrl, {
+            folder: "artifacts",
+            resource_type: "image",
+          });
+          const cloudinaryUrl = uploadResult.secure_url;
+
+          if (jobId) {
+            try {
+              await sql`UPDATE jobs SET status = 'done', result_url = ${cloudinaryUrl} WHERE id = ${jobId}`;
+            } catch { /* non-fatal */ }
+          }
+
+          try {
+            await sql`
+              INSERT INTO generations (ip_address, city, country, phrase, subtitle, media_type, vibe, movie_genre, flyer_style, scent_style, image_url, replicate_url, model_used)
+              VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${scentStyle || null}, ${cloudinaryUrl}, ${cloudinaryUrl}, ${modelUsed})
+            `;
+          } catch (dbError) {
+            console.error("Primary INSERT failed, retrying without model_used:", dbError);
+            try {
+              await sql`
+                INSERT INTO generations (ip_address, city, country, phrase, subtitle, media_type, vibe, movie_genre, flyer_style, scent_style, image_url, replicate_url)
+                VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${scentStyle || null}, ${cloudinaryUrl}, ${cloudinaryUrl})
+              `;
+            } catch (fallbackError) {
+              console.error("Fallback INSERT also failed:", fallbackError);
+            }
+          }
+        } catch (uploadErr) {
+          console.error("Background Cloudinary upload failed:", uploadErr);
+          if (jobId) {
+            try {
+              await sql`UPDATE jobs SET status = 'failed', error_msg = 'Post-processing failed' WHERE id = ${jobId}`;
+            } catch { /* non-fatal */ }
+          }
+        }
+      });
+
+      return NextResponse.json({ url: dataUrl });
+    }
 
   } catch (error) {
     console.error("Error generating image:", error);
     // @ts-ignore
     const errorMessage = error?.response?.data?.detail || error?.message || "Failed to generate";
+
+    if (jobId) {
+      try {
+        await sql`UPDATE jobs SET status = 'failed', error_msg = ${errorMessage} WHERE id = ${jobId}`;
+      } catch { /* non-fatal */ }
+    }
+
     return NextResponse.json({ error: errorMessage }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 export default function Home() {
   const [phrase, setPhrase] = useState("");
@@ -16,10 +16,58 @@ export default function Home() {
   const [showOverlay, setShowOverlay] = useState(false);
   const [modelChoice, setModelChoice] = useState<"xi" | "null" | null>(null);
 
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const completionHandledRef = useRef(false);
+
   useEffect(() => {
     const savedSubmitter = localStorage.getItem("submitter");
     if (savedSubmitter) setSubmitter(savedSubmitter);
   }, []);
+
+  useEffect(() => () => stopPolling(), []);
+
+  const stopPolling = () => {
+    if (pollIntervalRef.current !== null) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+  };
+
+  const handleGenerationComplete = (url: string, requestedPhrase: string) => {
+    if (completionHandledRef.current) return;
+    completionHandledRef.current = true;
+    stopPolling();
+    setGeneratedImage(url);
+    setShowOverlay(true);
+    setIsLoading(false);
+    playSound('/sounds/microwave-timer.mp3');
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      new Notification('Your artifact is ready!', {
+        body: requestedPhrase ? `"${requestedPhrase}" has been generated.` : 'Tap to view your artifact.',
+        icon: '/favicon.ico',
+      });
+    }
+  };
+
+  const startPolling = (jobId: string, requestedPhrase: string) => {
+    stopPolling();
+    pollIntervalRef.current = setInterval(async () => {
+      try {
+        const res = await fetch(`/api/status/${jobId}`);
+        if (!res.ok) return;
+        const data = await res.json();
+        if (data.status === 'done' && data.url) {
+          handleGenerationComplete(data.url, requestedPhrase);
+        } else if (data.status === 'failed') {
+          stopPolling();
+          setIsLoading(false);
+          alert('Generation failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch {
+        // Network error during poll — will retry next interval
+      }
+    }, 4000);
+  };
 
 
   const randomizeVibe = () => {
@@ -78,40 +126,38 @@ export default function Home() {
     if (e) e.preventDefault();
     if (!phrase || !mediaType || !modelChoice) return;
 
+    const jobId = crypto.randomUUID();
+    const requestedPhrase = phrase;
+    completionHandledRef.current = false;
+
     setIsLoading(true);
     setGeneratedImage(null);
 
     if (submitter) localStorage.setItem("submitter", submitter);
 
+    // Request notification permission during this user gesture so the prompt is allowed
+    if (typeof Notification !== 'undefined' && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    // Polling is the reliable completion path — it survives the browser being backgrounded
+    startPolling(jobId, requestedPhrase);
+
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          phrase,
-          subtitle,
-          submitter,
-          mediaType,
-          vibe,
-          movieGenre,
-          flyerStyle,
-          scentStyle,
-          modelChoice,
-        }),
+        body: JSON.stringify({ phrase, subtitle, submitter, mediaType, vibe, movieGenre, flyerStyle, scentStyle, modelChoice, jobId }),
       });
-
       const data = await res.json();
       if (data.url) {
-        setGeneratedImage(data.url);
-        setShowOverlay(true);
-        playSound('/sounds/microwave-timer.mp3');
-      } else alert("Failed to generate: " + (data.error || "Unknown error"));
-    } catch (error) {
-      console.error(error);
-      alert("Something went wrong. Check the console.");
-    } finally {
-      setIsLoading(false);
+        handleGenerationComplete(data.url, requestedPhrase);
+      }
+      // data.error case: polling will pick up the 'failed' status from the DB
+    } catch {
+      // Fetch was killed (mobile backgrounding, network loss) — polling is handling it
     }
+    // No finally block: isLoading is cleared by handleGenerationComplete or poll failure handler
   };
 
   const playSound = (soundFile: string) => {
@@ -434,6 +480,12 @@ export default function Home() {
                 )}
               </span>
             </button>
+
+            {isLoading && (
+              <p className="text-center text-xs opacity-40 mt-3" style={{ fontFamily: "var(--font-mono)" }}>
+                Safe to switch apps — we&apos;ll notify you when it&apos;s done.
+              </p>
+            )}
           </form>
         </div>
 

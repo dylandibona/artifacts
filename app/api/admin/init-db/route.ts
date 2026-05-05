@@ -32,6 +32,17 @@ export async function GET() {
       ALTER TABLE generations ADD COLUMN IF NOT EXISTS model_used VARCHAR(50)
     `;
 
+    // Job tracking for async polling (mobile background support)
+    await sql`
+      CREATE TABLE IF NOT EXISTS jobs (
+        id TEXT PRIMARY KEY,
+        status TEXT NOT NULL DEFAULT 'pending',
+        result_url TEXT,
+        error_msg TEXT,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      )
+    `;
+
     return NextResponse.json({ message: "Database initialized successfully" });
   } catch (error) {
     console.error("Database init error:", error);
