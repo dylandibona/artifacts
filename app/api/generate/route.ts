@@ -200,18 +200,15 @@ No text anywhere except the fragrance name${subtitle ? " and tagline" : ""} on t
         // literal-pun reliability of the format work (Option B from the spec).
         let pubIllustration = `a traditional oil-painted illustration representing ${phrase}`;
         try {
-          const illustResult = await openai.chat.completions.create({
-            model: "gpt-4o-mini",
-            max_tokens: 60,
-            messages: [
-              {
-                role: "system",
-                content: "You write illustration descriptions for traditional English pub signs. Given a pub name, return ONLY a concise description (under 25 words) of the central painted illustration in the classic British pub sign tradition. Be literal or punny. Specify a simple background color or heraldic shield shape. No preamble, no name prefix, just the description.",
-              },
-              { role: "user", content: phrase },
-            ],
+          const illustResult = await replicate.run("openai/gpt-4o-mini", {
+            input: {
+              system_prompt: "You write illustration descriptions for traditional English pub signs. Given a pub name, return ONLY a concise description (under 25 words) of the central painted illustration in the classic British pub sign tradition. Be literal or punny. Specify a simple background color or heraldic shield shape. No preamble, no name prefix, just the description.",
+              prompt: phrase,
+              max_completion_tokens: 60,
+            },
           });
-          pubIllustration = illustResult.choices[0]?.message?.content?.trim() || pubIllustration;
+          const text = (Array.isArray(illustResult) ? illustResult.join("") : String(illustResult)).trim();
+          pubIllustration = text || pubIllustration;
         } catch {
           // fall through to default illustration description
         }
@@ -235,7 +232,8 @@ ${defaultRealism}`;
     }
 
     // Generate image based on user's model choice
-    // "xi" (Node Ξ) = Recraft V4 via Replicate, "null" (Node ∅) = gpt-image-2 via OpenAI
+    // "xi" (Node Ξ) = Recraft V4 via Replicate, "null" (Node ∅) = gpt-image-2
+    // (via Replicate by default; GPT_IMAGE_PROVIDER=openai routes it direct)
     let replicateUrl: string;
     let modelUsed = modelChoice === "xi" ? "recraft-v4" : "gpt-image-2";
 
@@ -249,8 +247,14 @@ ${defaultRealism}`;
       return Array.isArray(output) ? output[0] : String(output);
     };
 
-    const runGptImage = async () => {
+    // gpt-image-2 provider switch: "replicate" (default — bills to the Replicate
+    // account) or "openai" (direct api.openai.com, kept for side-by-side testing).
+    // Flip via GPT_IMAGE_PROVIDER=openai.
+    const gptImageProvider = process.env.GPT_IMAGE_PROVIDER === "openai" ? "openai" : "replicate";
+
+    const runGptImageOpenAI = async () => {
       const startedAt = new Date().toISOString();
+      const t0 = Date.now();
       console.log(`[gpt-image-2 ${startedAt}] calling OpenAI images.generate`);
       try {
         const result = await openai.images.generate({
@@ -260,17 +264,72 @@ ${defaultRealism}`;
           n: 1,
         });
         const first = result.data?.[0];
+        console.log(`[gpt-image-2] engine=gpt-image-2 provider=openai duration_ms=${Date.now() - t0}`);
         if (first?.b64_json) return `data:image/png;base64,${first.b64_json}`;
         if (first?.url) return first.url;
         throw new Error("gpt-image-2 returned no image data");
       } catch (err) {
         const e = err as { code?: string; status?: number; message?: string; requestID?: string };
         console.error(
-          `[gpt-image-2 ${startedAt}] FAIL code=${e?.code ?? "unknown"} status=${e?.status ?? "?"} reqID=${e?.requestID ?? "?"} message=${e?.message ?? ""}`,
+          `[gpt-image-2 ${startedAt}] FAIL provider=openai code=${e?.code ?? "unknown"} status=${e?.status ?? "?"} reqID=${e?.requestID ?? "?"} message=${e?.message ?? ""}`,
         );
         throw err;
       }
     };
+
+    const runGptImageReplicate = async () => {
+      const startedAt = new Date().toISOString();
+      const t0 = Date.now();
+      console.log(`[gpt-image-2 ${startedAt}] calling Replicate openai/gpt-image-2`);
+      // Low-credit Replicate accounts are throttled to a burst of 1 request/min,
+      // and Pub Sign fires two Replicate calls back-to-back — honor retry_after
+      // once instead of failing the whole generation.
+      const runOnce = () =>
+        // Mirrors the direct OpenAI call: 1024x1024, one image, png (Replicate's
+        // default output_format is webp — never let that through).
+        replicate.run("openai/gpt-image-2", {
+          input: {
+            prompt: prompt,
+            aspect_ratio: "1024x1024",
+            number_of_images: 1,
+            quality: "auto",
+            output_format: "png",
+          },
+        });
+      try {
+        let output;
+        try {
+          output = await runOnce();
+        } catch (firstErr) {
+          const fe = firstErr as { response?: { status?: number; headers?: Headers } };
+          if (fe?.response?.status !== 429) throw firstErr;
+          const retryAfter = Number(fe.response?.headers?.get?.("retry-after")) || 10;
+          const waitMs = Math.min(retryAfter, 30) * 1000;
+          console.log(`[gpt-image-2] 429 throttled, retrying once in ${waitMs}ms`);
+          await new Promise((r) => setTimeout(r, waitMs));
+          output = await runOnce();
+        }
+        console.log(`[gpt-image-2] engine=gpt-image-2 provider=replicate duration_ms=${Date.now() - t0}`);
+        const first = Array.isArray(output) ? output[0] : output;
+        const url = String(first);
+        if (!url || !url.startsWith("http")) throw new Error("gpt-image-2 returned no image data");
+        return url;
+      } catch (err) {
+        const e = err as { message?: string; response?: { status?: number } };
+        const status = e?.response?.status;
+        console.error(
+          `[gpt-image-2 ${startedAt}] FAIL provider=replicate status=${status ?? "?"} message=${e?.message ?? ""}`,
+        );
+        // Billing/rate-limit errors get the same clean user-facing message the
+        // app already shows, instead of leaking raw provider error payloads.
+        if (status === 402 || status === 429) {
+          throw new Error("The image engine is temporarily unavailable — please try again in a moment.");
+        }
+        throw err;
+      }
+    };
+
+    const runGptImage = gptImageProvider === "openai" ? runGptImageOpenAI : runGptImageReplicate;
 
     // No cross-provider fallback — if the user picked Node Ξ they want Recraft V4,
     // if they picked Node ∅ they want gpt-image-2. Errors surface so upstream
@@ -319,11 +378,12 @@ ${defaultRealism}`;
 
     } else {
       // --- gpt-image-2: respond immediately, upload in background ---
-      // The model already returns b64_json in memory — no need to wait for Cloudinary
-      // before the client can display it. We ship the data URL right away and let
-      // after() handle the Cloudinary upload + DB logging + job status update.
+      // The provider returns something displayable right away (a base64 data URL
+      // from OpenAI, a delivery URL from Replicate) — no need to wait for
+      // Cloudinary before the client can display it. We ship it immediately and
+      // let after() handle the Cloudinary upload + DB logging + job status update.
       const dataUrl = await runGptImage();
-      console.log(`Image generated with ${modelUsed}`);
+      console.log(`Image generated with ${modelUsed} via ${gptImageProvider}`);
 
       after(async () => {
         try {
@@ -339,17 +399,21 @@ ${defaultRealism}`;
             } catch { /* non-fatal */ }
           }
 
+          // With the Replicate provider the source is a real (temporary) delivery
+          // URL worth recording; the OpenAI path only has the base64 payload, so
+          // fall back to the Cloudinary URL there rather than storing megabytes.
+          const sourceUrl = dataUrl.startsWith("http") ? dataUrl : cloudinaryUrl;
           try {
             await sql`
               INSERT INTO generations (ip_address, city, country, phrase, subtitle, media_type, vibe, movie_genre, flyer_style, scent_style, image_url, replicate_url, model_used)
-              VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${scentStyle || null}, ${cloudinaryUrl}, ${cloudinaryUrl}, ${modelUsed})
+              VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${scentStyle || null}, ${cloudinaryUrl}, ${sourceUrl}, ${modelUsed})
             `;
           } catch (dbError) {
             console.error("Primary INSERT failed, retrying without model_used:", dbError);
             try {
               await sql`
                 INSERT INTO generations (ip_address, city, country, phrase, subtitle, media_type, vibe, movie_genre, flyer_style, scent_style, image_url, replicate_url)
-                VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${scentStyle || null}, ${cloudinaryUrl}, ${cloudinaryUrl})
+                VALUES (${ipAddress}, ${city}, ${country}, ${phrase}, ${subtitle || null}, ${mediaType}, ${vibe || null}, ${movieGenre || null}, ${flyerStyle || null}, ${scentStyle || null}, ${cloudinaryUrl}, ${sourceUrl})
               `;
             } catch (fallbackError) {
               console.error("Fallback INSERT also failed:", fallbackError);

@@ -26,9 +26,10 @@ Open http://localhost:3000
 Required in `.env.local`:
 
 ```
-REPLICATE_API_TOKEN=     # Recraft V4 via Replicate
-OPENAI_API_KEY=          # gpt-image-2 via OpenAI
-OPENAI_ORG_ID=           # OpenAI org ID (required to avoid 403s on gpt-image-*)
+REPLICATE_API_TOKEN=     # Recraft V4 + gpt-image-2 via Replicate
+OPENAI_API_KEY=          # gpt-4o-mini (Pub Sign helper); gpt-image-2 only when GPT_IMAGE_PROVIDER=openai
+OPENAI_ORG_ID=           # OpenAI org ID (required to avoid 403s on gpt-image-* direct)
+GPT_IMAGE_PROVIDER=      # optional: "replicate" (default) or "openai" — routes gpt-image-2
 CLOUDINARY_CLOUD_NAME=   # Image storage
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
@@ -90,7 +91,7 @@ Request body:
 
 Response differs by model:
 - **Node Ξ (Recraft)**: returns `{ url: "<cloudinary_url>" }` after Cloudinary upload
-- **Node ∅ (gpt-image-2)**: returns `{ url: "<base64_data_url>" }` immediately; Cloudinary upload and DB logging happen via `after()` in the background
+- **Node ∅ (gpt-image-2)**: returns `{ url }` immediately (Replicate delivery URL by default; base64 data URL when `GPT_IMAGE_PROVIDER=openai`); Cloudinary upload and DB logging happen via `after()` in the background
 
 ### GET /api/status/[jobId]
 
@@ -121,7 +122,7 @@ Initialize both tables via `/api/admin/init-db`. **Must be run after any fresh d
 
 **AI Models**:
 - "Node Ξ" = Recraft V4 (`recraft-ai/recraft-v4`) via Replicate — fast (~10–20s)
-- "Node ∅" = gpt-image-2 (`gpt-image-2`) via OpenAI — thoughtful (~30–60s)
+- "Node ∅" = gpt-image-2 — thoughtful (~30–60s). Routed via Replicate (`openai/gpt-image-2`) by default so all image billing lands on the Replicate account; set `GPT_IMAGE_PROVIDER=openai` to use the direct OpenAI API instead (kept for side-by-side testing). The Pub Sign format additionally makes a small `gpt-4o-mini` chat call via OpenAI regardless of this flag.
 
 **Image Generation Flow (Node Ξ / Recraft)**:
 1. Client generates UUID job ID, starts polling `/api/status/[jobId]` every 4s
@@ -135,8 +136,8 @@ Initialize both tables via `/api/admin/init-db`. **Must be run after any fresh d
 **Image Generation Flow (Node ∅ / gpt-image-2)**:
 1. Client generates UUID job ID, starts polling `/api/status/[jobId]` every 4s
 2. POST to `/api/generate` — server inserts job as "pending"
-3. Calls gpt-image-2 → b64_json (~30–60s)
-4. **Returns `{ url: dataUrl }` immediately** (base64 data URL — no Cloudinary wait)
+3. Calls gpt-image-2 (~30–60s) — via Replicate (`openai/gpt-image-2`, temporary delivery URL) by default, or direct OpenAI (b64_json) when `GPT_IMAGE_PROVIDER=openai`
+4. **Returns `{ url }` immediately** (Replicate delivery URL or base64 data URL — no Cloudinary wait)
 5. `after()` callback runs in background: uploads to Cloudinary, logs to `generations`, updates job to "done" with Cloudinary URL
 6. Client (fetch path) gets image without waiting for Cloudinary
 7. Polling clients (mobile-backgrounded) get the Cloudinary URL once background work finishes
